@@ -20,7 +20,7 @@ Authorization   Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIs
 ```json
 {
   "first_name": "Zeki",
-  "last name": "Erkin",
+  "last_name": "Erkin",
   "email": "Z.Erkin@tudelft.nl",
   "affiliation": "Delft University of Technology"
 }
@@ -29,7 +29,7 @@ Authorization   Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIs
 
 ### Get All Researchers
 
-`GET http://localhost:8088/api/users`
+`GET http://localhost:8088/api/users/researchers`
 
 **Request Headers:**
 ```
@@ -68,7 +68,6 @@ Authorization   Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIs
 
 ```json
 {
-  "username": "zerkin",
   "first_name": "Zekeriya",
   "last_name": "Erkin",
   "email": "Z.Erkin@tudelft.nl",
@@ -127,7 +126,6 @@ Authorization   Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIs
 **Body:**
 ```json
 {
-"username": "zerkin",
 "old_password": "%n&Z*4vRj@q@S9ww3eUpX))4)s7&p+)8W]TljG4i",
 "new_password": "a$Ysit,kw%,6,!,W{i[vci#56q&[.+]r'M$P+#{n"
 }

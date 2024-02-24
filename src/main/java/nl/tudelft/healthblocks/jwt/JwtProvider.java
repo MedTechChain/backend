@@ -3,10 +3,13 @@ package nl.tudelft.healthblocks.jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 import nl.tudelft.healthblocks.security.UserRole;
 import nl.tudelft.healthblocks.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -18,6 +21,7 @@ public class JwtProvider {
 
     private final SecretKey jwtSecretKey;
 
+    @Getter
     @Value("${jwt.expirationtime}")
     private long jwtExpirationTime;
 
@@ -50,6 +54,14 @@ public class JwtProvider {
         return claims.getPayload().getExpiration().before(new Date(System.currentTimeMillis()));
     }
 
+    public Optional<String> getJwtFromHeader(HttpServletRequest request) {
+        String authenticationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authenticationHeader == null || !authenticationHeader.startsWith("Bearer")) {
+            return Optional.empty();
+        }
+        return Optional.of(authenticationHeader.substring("Bearer ".length()));
+    }
+
     public Optional<Jws<Claims>> validateAndParseClaims(String token) {
         try {
             Jws<Claims> claims = Jwts.parser().verifyWith(this.jwtSecretKey).build().parseSignedClaims(token);
@@ -67,7 +79,12 @@ public class JwtProvider {
         return Long.parseLong(claims.getPayload().getSubject());
     }
 
-    public String getRole(Jws<Claims> claims) {
-        return claims.getPayload().get("role").toString();
+    public UserRole getRole(Jws<Claims> claims) {
+        String role = claims.getPayload().get("role").toString().toUpperCase();
+        try {
+            return UserRole.valueOf(role);
+        } catch (IllegalArgumentException e) {
+            return UserRole.UNKNOWN;
+        }
     }
 }

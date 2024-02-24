@@ -31,12 +31,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         // Get JWT from the Authorization header
-        final String authenticationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (authenticationHeader == null || !authenticationHeader.startsWith("Bearer")) {
+        Optional<String> resolvedJwt = this.jwtProvider.getJwtFromHeader(request);
+        if (resolvedJwt.isEmpty()) {
             filterChain.doFilter(request, response);
             return;
         }
-        final String jwt = authenticationHeader.substring("Bearer ".length());
+        final String jwt = resolvedJwt.get();
 
         // If the user is not authenticated, validate the JWT
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
