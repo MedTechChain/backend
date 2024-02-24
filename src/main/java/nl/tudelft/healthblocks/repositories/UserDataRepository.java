@@ -14,7 +14,7 @@ import java.util.UUID;
  * A class for the database that stores the user data.
  */
 @Repository
-public interface UserRepository extends JpaRepository<UserData, UUID> {
+public interface UserDataRepository extends JpaRepository<UserData, UUID> {
 
     /**
      * Finds a user by their username.

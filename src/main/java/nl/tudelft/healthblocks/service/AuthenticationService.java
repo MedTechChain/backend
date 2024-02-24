@@ -2,7 +2,7 @@ package nl.tudelft.healthblocks.service;
 
 import nl.tudelft.healthblocks.entities.ResearcherDTO;
 import nl.tudelft.healthblocks.entities.UserData;
-import nl.tudelft.healthblocks.repositories.UserRepository;
+import nl.tudelft.healthblocks.repositories.UserDataRepository;
 import nl.tudelft.healthblocks.security.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @Service
 public class AuthenticationService implements UserDetailsService {
 
-    private final UserRepository userDataRepository;
+    private final UserDataRepository userDataRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -28,21 +28,21 @@ public class AuthenticationService implements UserDetailsService {
      * Creates an AuthenticationService object with the specified values.
      * In addition, it created the administrator user with the default username, password and userID.
      *
-     * @param userRepository    the database to store users (i.e. user data)
+     * @param userDataRepository    the database to store users (i.e. user data)
      * @param passwordEncoder       the password encoder to hash user passwords
      */
-    public AuthenticationService(UserRepository userRepository,
+    public AuthenticationService(UserDataRepository userDataRepository,
                                  PasswordEncoder passwordEncoder,
                                  @Value("${admin.username}") String adminUsername,
                                  @Value("${admin.password}") String adminPassword) {
-        this.userDataRepository = userRepository;
+        this.userDataRepository = userDataRepository;
         this.passwordEncoder = passwordEncoder;
 
         // If the admin user does not exist, create one
-        if (userRepository.findByUsername(adminUsername).isEmpty()) {
+        if (userDataRepository.findByUsername(adminUsername).isEmpty()) {
             UserData admin = new UserData(adminUsername, this.passwordEncoder.encode(adminPassword),
                     "admin@tudelft.nl", "Admin", "Admin", "TUDelft", UserRole.ADMIN);
-            userRepository.save(admin);
+            userDataRepository.save(admin);
         };
 
         //this.userDataRepository.save(new UserData("Jegor", this.passwordEncoder.encode("password1"),
