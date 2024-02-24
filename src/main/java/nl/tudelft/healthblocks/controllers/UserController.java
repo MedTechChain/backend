@@ -24,8 +24,12 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
+/**
+ * A (REST) controller class that provides API endpoints and interacts with the Service class.
+ */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -39,11 +43,22 @@ public class UserController {
     private final ObjectMapper objectMapper;
 
 
+    /**
+     * Test endpoint. TODO: remove
+     */
     @GetMapping
     public ResponseEntity<String> greetings() {
         return ResponseEntity.ok("Salut, Alin!");
     }
 
+    /**
+     * Logs in the user. If successful, sends back a JSON with JWT.
+     * Both admin and researchers are allowed to perform this operation.
+     *
+     * @param request           the received HTTP request
+     * @param response          the HTTP response with the JWT that will be sent back
+     * @throws IOException      if something goes wrong during the JSON deserialization process
+     */
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -53,27 +68,42 @@ public class UserController {
         String password = jsonNode.get("password").asText();
 
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+
         UserData user = this.authenticationService.loadUserByUsername(username);
         String jwt = this.jwtProvider.generateJwtToken(user.getUserId(), user.getRole(), new Date(System.currentTimeMillis()));
 
         String responseBody = this.objectMapper.createObjectNode()
-                .put("jwt", jwt).put("token_type", "JWT")
+                .put("jwt", jwt)
+                .put("token_type", "JWT")
                 .put("expires_in", this.jwtProvider.getJwtExpirationTime()).toString();
         response.getWriter().write(responseBody);
         response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
     }
 
-    private boolean validateEmail(String emailAddress) {
-        // Taken from: https://www.baeldung.com/java-email-validation-regexn
+    /**
+     * Checks whether the provided email address is valid (i.e. matches the regex).
+     * The regex is taken from <a href="https://www.baeldung.com/java-email-validation-regexn">Baeldung</a>.
+     *
+     * @param emailAddress      the email address to validate
+     * @return                  true if the provided email address is valid, false otherwise
+     */
+    private boolean isEmailValid(String emailAddress) {
         String emailRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
                 + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
         return Pattern.compile(emailRegex).matcher(emailAddress).matches();
     }
 
-    private Jws<Claims> resolveJwtToken(HttpServletRequest request) {
+    /**
+     * Gets the JWT from the provided HTTP request, validates and parses it, and extracts the claims with data.
+     * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
+     *
+     * @param request           the HTTP request with the JWT (aka the 'Bearer token')
+     * @return                  JWT claims with the user details (userID and role) and other information about the JWT
+     */
+    private Jws<Claims> resolveJwtClaims(HttpServletRequest request) {
         Optional<String> resolvedJwt = this.jwtProvider.getJwtFromHeader(request);
         if (resolvedJwt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT is missing");
         }
         String jwt = resolvedJwt.get();
         Optional<Jws<Claims>> claims = this.jwtProvider.validateAndParseClaims(jwt);
@@ -83,55 +113,85 @@ public class UserController {
         return claims.get();
     }
 
+    /**
+     * Creates and registers a new user based on the data specified in the JSON body of the request.
+     * Only admin is allowed to perform this operation, which will be checked using the JWT.
+     *
+     * @param request           the HTTP request with the JWT and the data about the new user
+     * @throws IOException      if something goes wrong during the JSON deserialization process
+     */
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void registerNewUser(HttpServletRequest request) throws IOException {
-        JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
-        String firstName  = jsonNode.get("first_name").asText();
-        String lastName = jsonNode.get("last_name").asText();
-        String email = jsonNode.get("email").asText();
-        String affiliation = jsonNode.get("affiliation").asText();
+        Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
+        if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
+        }
 
-        if (!validateEmail(email)) {
+        JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
+        String email = jsonNode.get("email").asText();
+        if (!isEmailValid(email)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provided email address is not valid");
         }
-        // TODO: register user in AuthenticationService
-        // this.authenticationService.registerNewUser()
+        String firstName  = jsonNode.get("first_name").asText();
+        String lastName = jsonNode.get("last_name").asText();
+        String affiliation = jsonNode.get("affiliation").asText();
+
+        this.authenticationService.registerNewUser(email, firstName, lastName, affiliation);
 
         // TODO: Send an email with a password
-
     }
 
+    /**
+     * Retrieves all researchers that are stored in the database.
+     * For each researcher, their userID, firstName, lastName and affiliation will be returned. TODO: email also
+     * Only admin is allowed to perform this operation, which will be checked using the JWT.
+     * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
+     *
+     * @param request           the HTTP request with the JWT and the data about the new user
+     * @param response          the HTTP response with the found researchers that will be sent back
+     * @throws IOException      if something goes wrong during the JSON deserialization process
+     */
     @GetMapping("/researchers")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public void getAllResearchers(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Jws<Claims> jwtClaims = this.resolveJwtToken(request);
+        Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Operation not allowed");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
         }
 
-        // TODO: convert to JSON
         List<ResearcherDTO> researchers = this.authenticationService.getAllResearchers();
-        response.getWriter().write(researchers.toString());
+        String responseBody = this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(researchers);
+        response.getWriter().write(responseBody);
     }
 
     // @GetMapping("researchers")
     // public void getFilteredResearchers() {}
 
+    /**
+     * Deletes the user with the specified userID (UUID), which should be provided as a query parameter `user_id`.
+     * Only admin is allowed to perform this operation, which will be checked using the JWT.
+     * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
+     *
+     * @param request           the HTTP request with the JWT and the userID of the user to be deleted
+     */
     @DeleteMapping("/delete")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteUser(HttpServletRequest request, HttpServletResponse response) {
-        Jws<Claims> jwtClaims = this.resolveJwtToken(request);
+    public void deleteUser(HttpServletRequest request) {
+        Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Operation not allowed");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
         }
-        String username = request.getParameter("user_id");
-        if (username == null) {
+
+        UUID userId;
+        try {
+            userId = UUID.fromString(request.getParameter("user_id"));
+        } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
-        // TODO: delete from AuthenticationService
 
+        this.authenticationService.deleteUser(userId);
     }
 
     // @PutMapping("/change_password")
