@@ -3,7 +3,7 @@ package nl.tudelft.healthblocks.service;
 import nl.tudelft.healthblocks.entities.ResearcherDTO;
 import nl.tudelft.healthblocks.entities.UserData;
 import nl.tudelft.healthblocks.repositories.UserDataRepository;
-import nl.tudelft.healthblocks.security.UserRole;
+import nl.tudelft.healthblocks.entities.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

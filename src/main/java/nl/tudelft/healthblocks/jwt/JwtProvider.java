@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
-import nl.tudelft.healthblocks.security.UserRole;
+import nl.tudelft.healthblocks.entities.UserRole;
 import nl.tudelft.healthblocks.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

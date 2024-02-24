@@ -9,14 +9,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import nl.tudelft.healthblocks.jwt.JwtProvider;
 import nl.tudelft.healthblocks.entities.UserData;
-import nl.tudelft.healthblocks.security.UserRole;
+import nl.tudelft.healthblocks.entities.UserRole;
 import nl.tudelft.healthblocks.service.AuthenticationService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
