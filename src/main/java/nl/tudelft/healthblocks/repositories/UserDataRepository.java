@@ -52,9 +52,8 @@ public interface UserDataRepository extends JpaRepository<UserData, UUID> {
     /**
      * Deletes a user with the specified userID.
      *
-     * @param userId    the userID of a user to be deleted
-     * @return          the user that has been deleted
+     * @param userId the userID of a user to be deleted
      */
-    UserData deleteByUserId(UUID userId);
+    void deleteByUserId(UUID userId);
 
 }
