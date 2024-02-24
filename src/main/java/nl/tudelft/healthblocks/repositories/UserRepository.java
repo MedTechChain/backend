@@ -14,7 +14,7 @@ import java.util.UUID;
  * A class for the database that stores the user data.
  */
 @Repository
-public interface UserRepository extends JpaRepository<UserData, Long> {
+public interface UserRepository extends JpaRepository<UserData, UUID> {
 
     /**
      * Finds a user by their username.
@@ -44,9 +44,17 @@ public interface UserRepository extends JpaRepository<UserData, Long> {
     /**
      * Finds all researchers (i.e. users with role "researcher"). Note that `UserRole.RESEARCHER = 1`.
      *
-     * @return          a list of found researchers
+     * @return          a list of found researchers (their userID, first name, last name and affiliation)
      */
     @Query("SELECT new nl.tudelft.healthblocks.entities.ResearcherDTO(userId, firstName, lastName, affiliation) FROM UserData where role = 1")
     List<ResearcherDTO> findAllResearchers();
+
+    /**
+     * Deletes a user with the specified userID.
+     *
+     * @param userId    the userID of a user to be deleted
+     * @return          the user that has been deleted
+     */
+    UserData deleteByUserId(UUID userId);
 
 }

@@ -7,6 +7,9 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+/**
+ * A DTO class for a researcher that will be sent when researchers have been requested.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
