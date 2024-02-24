@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class PasswordConfig {
 
     private final int passwordEncoderStrength = 12;
+
     /**
      * Instantiate a bean password encoder object which uses BCrypt to hash passwords.
      *

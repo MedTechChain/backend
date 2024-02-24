@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jws;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import nl.tudelft.healthblocks.entities.ResearcherDTO;
 import nl.tudelft.healthblocks.jwt.JwtProvider;
 import nl.tudelft.healthblocks.entities.UserData;
 import nl.tudelft.healthblocks.entities.UserRole;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -103,14 +105,15 @@ public class UserController {
     @GetMapping("/researchers")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void getAllResearchers(HttpServletRequest request, HttpServletResponse response) {
+    public void getAllResearchers(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Jws<Claims> jwtClaims = this.resolveJwtToken(request);
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Operation not allowed");
         }
 
-        // TODO: fetch from AuthenticationService
-        this.authenticationService.getAllResearchers();
+        // TODO: convert to JSON
+        List<ResearcherDTO> researchers = this.authenticationService.getAllResearchers();
+        response.getWriter().write(researchers.toString());
     }
 
     // @GetMapping("researchers")
