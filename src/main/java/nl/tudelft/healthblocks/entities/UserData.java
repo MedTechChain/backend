@@ -1,8 +1,7 @@
 package nl.tudelft.healthblocks.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * A class that is used to store the user data.
@@ -21,23 +21,39 @@ import java.util.Set;
  * UserId is used internally to identify the user (i.e. also in the UserManagement service);
  *  it is also used as "Subject" in the JWT token used for the authentication.
  */
-@Entity(name = "user-data")
+@Entity // (name = "user_data")
+//@Table(name = "user_data")
 @Getter @NoArgsConstructor
 public class UserData implements UserDetails {
 
-    @Getter
-    @Id
     @Column(name = "username", length = 20, unique = true, nullable = false)
     private String username;
 
-    @Getter
-    @Column(name = "userId", unique = true, nullable = false, updatable = false)
-    private long userId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id", unique = true, nullable = false, updatable = false)
+    private UUID userId;
 
-    @Setter
     @Column(name = "password", length = 128, nullable = false)
     private String password;
 
+    @Setter
+    @Column(name = "email", length = 50, nullable = false, unique = true)
+    private String email;
+
+    @Setter
+    @Column(name = "first_name", length = 50, nullable = false)
+    private String firstName;
+
+    @Setter
+    @Column(name = "last_name", length = 50, nullable = false)
+    private String lastName;
+
+    @Setter
+    @Column(name = "affiliation", length = 50)
+    private String affiliation;
+
+    @Setter
     @Column(name = "role", nullable = false)
     private UserRole role;
 
@@ -62,14 +78,16 @@ public class UserData implements UserDetails {
      * Creates a UserData object with the specified values.
      *
      * @param username  the username of the user (a unique identifier used to log in)
-     * @param userId    the ID of the user (a unique identifier used internally to identify the user)
      * @param password  the password of the user (will be hashed)
      * @param role      the role of the user ("admin" or "researcher")
      */
-    public UserData(String username, long userId, String password, UserRole role) {
+    public UserData(String username, String password, String email, String firstName, String lastName, String affiliation, UserRole role) {
         this.username = username;
-        this.userId = userId;
         this.password = password;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.affiliation = affiliation;
         this.role = role;
         this.accountNonExpired = true;
         this.accountNonLocked = true;

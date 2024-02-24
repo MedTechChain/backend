@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class JwtProvider {
@@ -38,8 +39,8 @@ public class JwtProvider {
         this.jwtSecretKey = jwtSecretKey;
     }
 
-    public String generateJwtToken(long userId, UserRole role, Date issueDate) {
-        Claims claims = Jwts.claims().subject(String.valueOf(userId)).add("role", role).build();
+    public String generateJwtToken(UUID userId, UserRole role, Date issueDate) {
+        Claims claims = Jwts.claims().subject(userId.toString()).add("role", role).build();
 
         // Convert the token expiration time (in minutes) to milliseconds
         Date expirationDate = new Date(issueDate.getTime() + this.jwtExpirationTime * 60000);
@@ -65,7 +66,7 @@ public class JwtProvider {
     public Optional<Jws<Claims>> validateAndParseClaims(String token) {
         try {
             Jws<Claims> claims = Jwts.parser().verifyWith(this.jwtSecretKey).build().parseSignedClaims(token);
-            long userId = Long.parseLong(claims.getPayload().getSubject());
+            UUID userId = UUID.fromString(claims.getPayload().getSubject());
             this.authenticationService.loadUserByUserId(userId); // Check if the user with the given userID exists
             if (isExpired(claims)) return Optional.empty();
 
@@ -75,8 +76,8 @@ public class JwtProvider {
         }
     }
 
-    public long getUserId(Jws<Claims> claims) {
-        return Long.parseLong(claims.getPayload().getSubject());
+    public UUID getUserId(Jws<Claims> claims) {
+        return UUID.fromString(claims.getPayload().getSubject());
     }
 
     public UserRole getRole(Jws<Claims> claims) {

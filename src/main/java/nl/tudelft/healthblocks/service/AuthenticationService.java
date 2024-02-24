@@ -1,7 +1,8 @@
 package nl.tudelft.healthblocks.service;
 
+import nl.tudelft.healthblocks.entities.ResearcherDTO;
 import nl.tudelft.healthblocks.entities.UserData;
-import nl.tudelft.healthblocks.repositories.UserDataRepository;
+import nl.tudelft.healthblocks.repositories.UserRepository;
 import nl.tudelft.healthblocks.security.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -9,7 +10,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * A class that communicates with the database with the user data.
@@ -17,7 +20,7 @@ import java.util.Optional;
 @Service
 public class AuthenticationService implements UserDetailsService {
 
-    private final UserDataRepository userDataRepository;
+    private final UserRepository userDataRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -25,23 +28,27 @@ public class AuthenticationService implements UserDetailsService {
      * Creates an AuthenticationService object with the specified values.
      * In addition, it created the administrator user with the default username, password and userID.
      *
-     * @param userDataRepository    the database to store users (i.e. user data)
+     * @param userRepository    the database to store users (i.e. user data)
      * @param passwordEncoder       the password encoder to hash user passwords
      */
-    public AuthenticationService(UserDataRepository userDataRepository,
+    public AuthenticationService(UserRepository userRepository,
                                  PasswordEncoder passwordEncoder,
                                  @Value("${admin.username}") String adminUsername,
-                                 @Value("${admin.userid}") long userId,
                                  @Value("${admin.password}") String adminPassword) {
-        this.userDataRepository = userDataRepository;
+        this.userDataRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
 
-        // Check if the admin user already exists
-        if (userDataRepository.findByUsername(adminUsername).isPresent()) return;
-
         // If the admin user does not exist, create one
-        UserData admin = new UserData(adminUsername, userId, passwordEncoder.encode(adminPassword), UserRole.ADMIN);
-        userDataRepository.save(admin);
+        if (userRepository.findByUsername(adminUsername).isEmpty()) {
+            UserData admin = new UserData(adminUsername, this.passwordEncoder.encode(adminPassword),
+                    "admin@tudelft.nl", "Admin", "Admin", "TUDelft", UserRole.ADMIN);
+            userRepository.save(admin);
+        };
+
+        //this.userDataRepository.save(new UserData("Jegor", this.passwordEncoder.encode("password1"),
+        //        "jegor@tudelft.nl", "Jegor", "Zelenjak", "TUDelft", UserRole.RESEARCHER));
+        //this.userDataRepository.save(new UserData("Alin", this.passwordEncoder.encode("password1"),
+        //        "alin@tudelft.nl", "Alin", "Rosu", "TUDelft", UserRole.RESEARCHER));
     }
 
     /**
@@ -67,10 +74,10 @@ public class AuthenticationService implements UserDetailsService {
      * @return              the user (i.e. the UserData object) if they have been found in the database
      * @throws UsernameNotFoundException when the user with the given userID has not been found in the database
      */
-    public UserData loadUserByUserId(long userId) throws UsernameNotFoundException {
+    public UserData loadUserByUserId(UUID userId) throws UsernameNotFoundException {
         Optional<UserData> user = this.userDataRepository.findByUserId(userId);
         if (user.isEmpty()) {
-            throw new UsernameNotFoundException(String.format("Could not find user with userId: %d", userId));
+            throw new UsernameNotFoundException(String.format("Could not find user with userId: %s", userId.toString()));
         }
         return user.get();
     }
@@ -78,20 +85,26 @@ public class AuthenticationService implements UserDetailsService {
     /**
      * Creates and registers a new user. By default, the user is assigned the "researcher" role.
      *
-     * @param username      the username for the new user
-     * @param userId        the userID for the new user
-     * @param password      the password for the new user, which will be encoded using the (BCrypt) password encoder
      * @return              true if the new user has been registered successfully, false if the user already exists
      */
-    public boolean registerNewUser(String username, long userId, String password) {
-        // TODO: maybe add a check for userID
-        if (userDataRepository.findByUsername(username).isPresent()) {
+    public boolean registerNewUser(String email, String firstName, String lastName, String affiliation) {
+        String username = "alin";  // TODO: generate one
+        if (this.userDataRepository.findByUsername(username).isPresent()) {
             return false;
         }
 
-        UserData newUser = new UserData(username, userId, passwordEncoder.encode(password), UserRole.RESEARCHER);
+        String password = this.passwordEncoder.encode("123"); // TODO: generate a password
+        UserData newUser = new UserData(username, password, email, firstName, lastName, affiliation, UserRole.RESEARCHER);
         this.userDataRepository.save(newUser);
         return true;
+    }
+
+    public List<ResearcherDTO> getAllResearchers() {
+        return this.userDataRepository.findAllResearchers();
+    }
+
+    public void deleteUser() {
+        // TODO: to be implemented
     }
 
     /**
@@ -102,7 +115,7 @@ public class AuthenticationService implements UserDetailsService {
      */
     public void changePassword(String username, String newPassword) {
         UserData user = loadUserByUsername(username);
-        user.setPassword(passwordEncoder.encode(newPassword));
+        //user.setPassword(passwordEncoder.encode(newPassword));
         userDataRepository.save(user);
     }
 }

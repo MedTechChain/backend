@@ -31,8 +31,6 @@ import java.util.regex.Pattern;
 public class UserController {
     private final AuthenticationManager authenticationManager;
 
-    private PasswordEncoder passwordEncoder;
-
     private final AuthenticationService authenticationService;
 
     private final JwtProvider jwtProvider;
@@ -113,6 +111,7 @@ public class UserController {
         }
 
         // TODO: fetch from AuthenticationService
+        this.authenticationService.getAllResearchers();
     }
 
     // @GetMapping("researchers")
@@ -125,7 +124,7 @@ public class UserController {
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Operation not allowed");
         }
-        String username = request.getParameter("username");
+        String username = request.getParameter("user_id");
         if (username == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }

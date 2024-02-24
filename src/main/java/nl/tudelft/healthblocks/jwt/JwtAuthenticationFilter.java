@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     AuthenticationService authenticationService;
@@ -43,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Optional<Jws<Claims>> claims = this.jwtProvider.validateAndParseClaims(jwt);
             // If the JWT is valid, set the user to 'authenticated'
             if (claims.isPresent()) {
-                final long userId = this.jwtProvider.getUserId(claims.get());
+                final UUID userId = this.jwtProvider.getUserId(claims.get());
                 UserDetails user = this.authenticationService.loadUserByUserId(userId); // TODO: maybe change to username?
 
                 UsernamePasswordAuthenticationToken authToken =

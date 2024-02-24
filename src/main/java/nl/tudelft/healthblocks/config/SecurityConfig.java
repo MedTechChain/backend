@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,21 +36,21 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        // TODO: check what is needed
-                        .requestMatchers(HttpMethod.POST, "api/auth/register").hasAnyAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/auth/change_password").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/auth/change_role").hasAnyAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/auth/delete").hasAnyAuthority("ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+//                        // TODO: check what is needed
+//                        .requestMatchers(HttpMethod.POST, "api/auth/register").hasAnyAuthority("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/api/auth/change_password").authenticated()
+//                        .requestMatchers(HttpMethod.PUT, "/api/auth/change_role").hasAnyAuthority("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/api/auth/delete").hasAnyAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(this.authenticationProvider())
-                .addFilterBefore(
-                        new JwtAuthenticationFilter(this.jwtProvider),
-                        UsernamePasswordAuthenticationFilter.class
-                )
-                //.formLogin(Customizer.withDefaults())
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authenticationProvider(this.authenticationProvider())
+//                .addFilterBefore(
+//                        new JwtAuthenticationFilter(this.jwtProvider),
+//                        UsernamePasswordAuthenticationFilter.class
+//                )
+                .formLogin(Customizer.withDefaults())
                 //.httpBasic(Customizer.withDefaults())
                 .build();
     }

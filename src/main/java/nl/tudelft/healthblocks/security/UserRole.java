@@ -6,7 +6,7 @@ package nl.tudelft.healthblocks.security;
  * "Unknown" is used locally, in case the role is not "Researcher" or "Admin".
  */
 public enum UserRole {
-    RESEARCHER,
     ADMIN,
-    UNKNOWN,
+    RESEARCHER,
+    UNKNOWN
 }
