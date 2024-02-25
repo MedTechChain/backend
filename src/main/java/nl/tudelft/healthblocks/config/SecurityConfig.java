@@ -103,7 +103,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-    
+
     /**
      * Creates the CorsConfigurationSource bean, used in the Spring framework.
      * CORS (Cross-Origin Resource Sharing) lets us specify what kind of cross-domain requests are authorized.

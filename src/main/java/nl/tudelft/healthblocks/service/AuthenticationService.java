@@ -23,7 +23,6 @@ import java.util.stream.IntStream;
 
 /**
  * A service class that communicates with the database with the user data.
- * TODO: sanitize all user input!!!
  */
 @Service
 public class AuthenticationService implements UserDetailsService {
@@ -31,6 +30,8 @@ public class AuthenticationService implements UserDetailsService {
     private final UserDataRepository userDataRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
 
     private final Environment env;
 
@@ -42,9 +43,11 @@ public class AuthenticationService implements UserDetailsService {
      * @param passwordEncoder       the password encoder to hash user passwords
      * @param env                   Spring environment (used to get admin default details from application.properties)
      */
-    public AuthenticationService(UserDataRepository userDataRepository, PasswordEncoder passwordEncoder, Environment env) {
+    public AuthenticationService(UserDataRepository userDataRepository, PasswordEncoder passwordEncoder,
+                                 EmailService emailService, Environment env) {
         this.userDataRepository = userDataRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
         this.env = env;
 
         // If the admin user does not exist, create one
@@ -58,12 +61,12 @@ public class AuthenticationService implements UserDetailsService {
      */
     private void createAdmin() {
         UserData admin = new UserData(
-                this.env.getProperty("${admin.username}"),
-                this.passwordEncoder.encode(this.env.getProperty("${admin.password}")),
-                this.env.getProperty("${admin.email}"),
-                this.env.getProperty("${admin.first-name}"),
-                this.env.getProperty("${admin.last-name}"),
-                this.env.getProperty("${admin.affiliation}"),
+                this.env.getProperty("admin.username"),
+                this.passwordEncoder.encode(this.env.getProperty("admin.password")),
+                this.env.getProperty("admin.email"),
+                this.env.getProperty("admin.first-name"),
+                this.env.getProperty("admin.last-name"),
+                this.env.getProperty("admin.affiliation"),
                 UserRole.ADMIN
         );
         this.userDataRepository.save(admin);
@@ -168,7 +171,14 @@ public class AuthenticationService implements UserDetailsService {
         UserData newUser = new UserData(username, hashedPassword, email, firstName, lastName, affiliation, UserRole.RESEARCHER);
         this.userDataRepository.save(newUser);
 
-        // TODO: send the username and password to the user by email
+        String emailContent = String.format("Dear %s,\n", firstName)
+                + "You have been registered in HealthBlocks. Your default credentials are:\n"
+                + String.format("\tUsername: %s\n\tPassword: %s\n", username, password)
+                + "Make sure to change your password, and don't forget to make it secure.\n"
+                + "Suggestion: you can also use a password manager.\n"
+                + String.format("In case you have questions, please contact %s.\n", this.env.getProperty("admin.email"))
+                + "Best regards,\nHealthBlocks";
+        this.emailService.sendSimpleEmail(email, "Welcome to HealthBlocks", emailContent);
     }
 
     /**
