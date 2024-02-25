@@ -54,6 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UUID userId = this.jwtProvider.getUserId(claims.get());
                 UserDetails user = this.authenticationService.loadUserByUserId(userId);
 
+                // Set the principal, (cleared) credentials and authorities for the authenticated user
+                // https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-providermanager
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

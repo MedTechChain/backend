@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -64,7 +65,10 @@ public class SecurityConfig {
                         new JwtAuthenticationFilter(this.authenticationService, this.jwtProvider),
                         UsernamePasswordAuthenticationFilter.class
                 )
-                .formLogin(Customizer.withDefaults())
+                // Specify custom login page, see: https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/form.html
+                .formLogin(form -> form
+                        .loginPage("/api/users/login")
+                        .permitAll())
                 .build();
     }
 
@@ -75,9 +79,9 @@ public class SecurityConfig {
      */
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setPasswordEncoder(this.passwordEncoder);
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(this.authenticationService);
+        authenticationProvider.setPasswordEncoder(this.passwordEncoder);
         return authenticationProvider;
     }
 
