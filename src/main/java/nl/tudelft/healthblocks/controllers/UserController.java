@@ -144,7 +144,7 @@ public class UserController {
 
     /**
      * Retrieves all researchers that are stored in the database.
-     * For each researcher, their userID, firstName, lastName and affiliation will be returned. TODO: email also
+     * For each researcher, their userID, firstName, lastName, email and affiliation will be returned.
      * Only admin is allowed to perform this operation, which will be checked using the JWT.
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *

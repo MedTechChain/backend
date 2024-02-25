@@ -26,6 +26,9 @@ public class ResearcherDTO {
     @JsonProperty("last_name")
     private String lastName;
 
+    @JsonProperty("email")
+    private String email;
+
     @JsonProperty("affiliation")
     private String affiliation;
 }

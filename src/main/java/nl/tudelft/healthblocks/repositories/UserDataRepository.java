@@ -44,9 +44,10 @@ public interface UserDataRepository extends JpaRepository<UserData, UUID> {
     /**
      * Finds all researchers (i.e. users with role "researcher"). Note that `UserRole.RESEARCHER = 1`.
      *
-     * @return          a list of found researchers (their userID, first name, last name and affiliation)
+     * @return          a list of found researchers (their userID, first name, last name, email and affiliation)
      */
-    @Query("SELECT new nl.tudelft.healthblocks.entities.ResearcherDTO(userId, firstName, lastName, affiliation) FROM UserData where role = 1")
+    @Query("SELECT new nl.tudelft.healthblocks.entities.ResearcherDTO(userId, firstName, lastName, email, affiliation) "
+            + "FROM UserData where role = 1")
     List<ResearcherDTO> findAllResearchers();
 
     /**

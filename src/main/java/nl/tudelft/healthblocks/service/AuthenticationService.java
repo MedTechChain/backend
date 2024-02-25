@@ -149,7 +149,7 @@ public class AuthenticationService implements UserDetailsService {
 
     /**
      * Retrieves all researchers that are present in the database.
-     * The information for each researcher includes userID, first name, last name, and affiliation.
+     * The information for each researcher includes userID, first name, last name, email and affiliation.
      *
      * @return              a list of retrieved researchers (with the information specified above)
      */
@@ -163,7 +163,6 @@ public class AuthenticationService implements UserDetailsService {
      * @param userId        the userID of the user to be deleted
      */
     public void deleteUser(UUID userId) {
-        // TODO: to be implemented
         if (this.userDataRepository.findByUserId(userId).isEmpty()) {
             throw new UsernameNotFoundException(String.format("User with userid %s not found", userId));
         }
