@@ -6,26 +6,32 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import nl.tudelft.healthblocks.entities.ResearcherDTO;
-import nl.tudelft.healthblocks.jwt.JwtProvider;
-import nl.tudelft.healthblocks.entities.UserData;
-import nl.tudelft.healthblocks.entities.UserRole;
-import nl.tudelft.healthblocks.service.AuthenticationService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
+import nl.tudelft.healthblocks.entities.ResearcherDto;
+import nl.tudelft.healthblocks.entities.UserData;
+import nl.tudelft.healthblocks.entities.UserRole;
+import nl.tudelft.healthblocks.jwt.JwtProvider;
+import nl.tudelft.healthblocks.service.AuthenticationService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 
 /**
  * A (REST) controller class that provides API endpoints and interacts with the Service class.
@@ -66,10 +72,14 @@ public class UserController {
         String username = jsonNode.get("username").asText();
         String password = jsonNode.get("password").asText();
 
-        this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        this.authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
 
         UserData user = this.authenticationService.loadUserByUsername(username);
-        String jwt = this.jwtProvider.generateJwtToken(user.getUserId(), user.getRole(), new Date());
+        String jwt = this.jwtProvider.generateJwtToken(
+                user.getUserId(), user.getRole(), new Date()
+        );
 
         String responseBody = this.objectMapper.createObjectNode()
                 .put("jwt", jwt)
@@ -93,11 +103,11 @@ public class UserController {
     }
 
     /**
-     * Gets the JWT from the provided HTTP request, validates and parses it, and extracts the claims with data.
+     * Gets the JWT from the HTTP request, validates and parses it, and extracts the JWT claims.
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
      * @param request           the HTTP request with the JWT (aka the 'Bearer token')
-     * @return                  JWT claims with the user details (userID and role) and other information about the JWT
+     * @return                  JWT claims with the user details (userID and role) and JWT details
      */
     private Jws<Claims> resolveJwtClaims(HttpServletRequest request) {
         Optional<String> resolvedJwt = this.jwtProvider.getJwtFromHeader(request);
@@ -107,7 +117,7 @@ public class UserController {
         String jwt = resolvedJwt.get();
         Optional<Jws<Claims>> claims = this.jwtProvider.validateAndParseClaims(jwt);
         if (claims.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT invalid or has expired");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT invalid or expired");
         }
         return claims.get();
     }
@@ -130,7 +140,7 @@ public class UserController {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
         String email = jsonNode.get("email").asText();
         if (!isEmailValid(email)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provided email address is not valid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email address is not valid");
         }
         String firstName  = jsonNode.get("first_name").asText();
         String lastName = jsonNode.get("last_name").asText();
@@ -143,7 +153,7 @@ public class UserController {
 
     /**
      * Retrieves all researchers that are stored in the database.
-     * For each researcher, their userID, firstName, lastName, email and affiliation will be returned.
+     * For each researcher, their userID, first name, last name, email and affiliation are returned.
      * Only admin is allowed to perform this operation, which will be checked using the JWT.
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
@@ -154,14 +164,16 @@ public class UserController {
     @GetMapping("/researchers")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void getAllResearchers(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void getAllResearchers(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
         }
 
-        List<ResearcherDTO> researchers = this.authenticationService.getAllResearchers();
-        String responseBody = this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(researchers);
+        List<ResearcherDto> researchers = this.authenticationService.getAllResearchers();
+        String responseBody = this.objectMapper
+                .writerWithDefaultPrettyPrinter().writeValueAsString(researchers);
         response.getWriter().write(responseBody);
     }
 
@@ -169,11 +181,11 @@ public class UserController {
     // public void getFilteredResearchers() {}
 
     /**
-     * Deletes the user with the specified userID (UUID), which should be provided as a query parameter `user_id`.
+     * Deletes the user with the given userID, which should be passed as a query parameter user_id.
      * Only admin is allowed to perform this operation, which will be checked using the JWT.
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
-     * @param request           the HTTP request with the JWT and the userID of the user to be deleted
+     * @param request           the HTTP request with the JWT and the userID of the user
      */
     @DeleteMapping("/delete")
     @ResponseStatus(HttpStatus.OK)

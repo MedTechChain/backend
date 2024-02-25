@@ -1,14 +1,14 @@
 package nl.tudelft.healthblocks.repositories;
 
-import nl.tudelft.healthblocks.entities.ResearcherDTO;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import nl.tudelft.healthblocks.entities.ResearcherDto;
 import nl.tudelft.healthblocks.entities.UserData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
  * A class for the database that stores the user data.
@@ -27,14 +27,16 @@ public interface UserDataRepository extends JpaRepository<UserData, UUID> {
 
     /**
      * Finds all usernames that start with the same prefix as the one provided.
-     * This is used for username generation, to append a number in case of multiple users with the same base username.
-     * E.g. if a new user John Doe is being registered, then 'jdoe' is the base username; in this case
+     * This is used for username generation, in order to append a number
+     *   in case of multiple users with the same base username.
+     * E.g. if a new user John Doe is being registered, then 'jdoe' is the base username, and
      *   jdoe1, jdoe2, ..., jdoe`n` will be retrieved.
      *
      * @param prefix    the prefix that a username should start with
      * @return          a list of found usernames
      */
-    @Query("SELECT username FROM UserData WHERE role = 1 AND username ILIKE :prefix||'%' ORDER BY username ASC ")
+    @Query("SELECT username FROM UserData WHERE role = 1 "
+            + "AND username ILIKE :prefix||'%' ORDER BY username ASC ")
     List<String> findAllUsernamesByPrefix(String prefix);
 
     /**
@@ -55,13 +57,15 @@ public interface UserDataRepository extends JpaRepository<UserData, UUID> {
 
 
     /**
-     * Finds all researchers (i.e. users with role "researcher"). Note that `UserRole.RESEARCHER = 1`.
+     * Finds all researchers (users with role "researcher"). Note that `UserRole.RESEARCHER = 1`.
      *
-     * @return          a list of found researchers (their userID, first name, last name, email and affiliation)
+     * @return          a list of found researchers
+     *                  (their userID, first name, last name, email and affiliation)
      */
-    @Query("SELECT new nl.tudelft.healthblocks.entities.ResearcherDTO(userId, firstName, lastName, email, affiliation) "
+    @Query("SELECT new nl.tudelft.healthblocks.entities."
+            + "ResearcherDto(userId, firstName, lastName, email, affiliation) "
             + "FROM UserData WHERE role = 1")
-    List<ResearcherDTO> findAllResearchers();
+    List<ResearcherDto> findAllResearchers();
 
     /**
      * Deletes a user with the specified userID.

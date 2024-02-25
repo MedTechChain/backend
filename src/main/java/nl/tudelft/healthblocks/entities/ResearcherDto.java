@@ -1,12 +1,12 @@
 package nl.tudelft.healthblocks.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
 
 /**
  * A DTO class for a researcher that will be sent when researchers have been requested.
@@ -15,7 +15,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResearcherDTO {
+public class ResearcherDto {
 
     @JsonProperty("user_id")
     private UUID userId;

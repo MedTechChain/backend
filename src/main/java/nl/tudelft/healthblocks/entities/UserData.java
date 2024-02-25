@@ -1,6 +1,14 @@
 package nl.tudelft.healthblocks.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,10 +16,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * A class that is used to store the user data.
@@ -22,7 +26,8 @@ import java.util.UUID;
  *  (to check the existence of the user and to send the credentials to the registered user)
  */
 @Entity
-@Getter @NoArgsConstructor
+@Getter
+@NoArgsConstructor
 public class UserData implements UserDetails {
 
     @Id
@@ -114,12 +119,16 @@ public class UserData implements UserDetails {
      * Checks whether another user is equal to this user, based on their userIDs.
      *
      * @param other         another user to compare to
-     * @return              true if another user is equal to this user, i.e. if their userIDs are equal, false otherwise
+     * @return              true if the users are equal, i.e. have equal userIDs, false otherwise
      */
     @Override
     public boolean equals(Object other) {
-        if (this == other) return true;
-        if (!(other instanceof UserData otherUserData)) return false;
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof UserData otherUserData)) {
+            return false;
+        }
         return Objects.equals(this.userId, otherUserData.userId);
     }
 

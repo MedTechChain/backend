@@ -1,12 +1,12 @@
 package nl.tudelft.healthblocks.jwt;
 
+import java.nio.charset.StandardCharsets;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 
 /**
  * A configuration class for creating the JWT key.
@@ -27,6 +27,9 @@ public class JwtSecretKey {
      */
     @Bean("secretKey")
     public SecretKey secretKey() {
-        return new SecretKeySpec(this.secretKeyString.getBytes(StandardCharsets.UTF_8), this.secretKeyAlgorithm);
+        return new SecretKeySpec(
+                this.secretKeyString.getBytes(StandardCharsets.UTF_8),
+                this.secretKeyAlgorithm
+        );
     }
 }

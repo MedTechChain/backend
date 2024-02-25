@@ -1,5 +1,6 @@
 package nl.tudelft.healthblocks.config;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import nl.tudelft.healthblocks.entities.UserRole;
 import nl.tudelft.healthblocks.jwt.JwtAuthenticationFilter;
@@ -23,13 +24,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 /**
  * A configuration class for some of the Spring Security components.
- * Namely, it creates beans for SecurityFilterChain, AuthenticationProvider and AuthenticationManager,
- *  and it also creates the CorsConfigurationSource bean.
+ * Namely, it creates beans for SecurityFilterChain, AuthenticationProvider
+ *  and AuthenticationManager, and it also creates the CorsConfigurationSource bean.
  */
+@SuppressWarnings("checkstyle:LineLength")
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -43,11 +43,11 @@ public class SecurityConfig {
 
     /**
      * Creates the SecurityFilterChain bean, needed for Spring Security.
-     * Sets the permissions for different endpoints, adds custom filters (here: JwtAuthenticationFilter), and adds the
-     *  custom login page (see <a href="https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/form.html">Form Login</a>).
+     * Sets the permissions for different endpoints, adds custom filters (JwtAuthenticationFilter),
+     *  and adds the custom login page (see <a href="https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/form.html">Form Login</a>).
      * Other configurations are also applied (such as CORS, CSRF and session management).
      *
-     * @param http              the object that allows configuring Web-based security for HTTP requests
+     * @param http              allows configuring Web-based security for HTTP requests
      * @return                  the created and configured SecurityFilterChain
      * @throws Exception        if something goes wrong during the SecurityFilterChain building
      */
@@ -67,13 +67,15 @@ public class SecurityConfig {
                             .hasAnyAuthority(UserRole.ADMIN.name())
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authenticationProvider(this.authenticationProvider())
                 .addFilterBefore(
                         new JwtAuthenticationFilter(this.authenticationService, this.jwtProvider),
                         UsernamePasswordAuthenticationFilter.class
                 )
-                //.formLogin(form -> form
+                //.formLogin(form -> form  // TODO: fix this + fix JavaDoc
                 //       .loginPage("/api/users/login")
                 //        .permitAll())
                 .build();
@@ -100,27 +102,29 @@ public class SecurityConfig {
      * @throws Exception        if something goes wrong when getting the AuthenticationManager
      */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+            throws Exception {
         return configuration.getAuthenticationManager();
     }
 
     /**
      * Creates the CorsConfigurationSource bean, used in the Spring framework.
-     * CORS (Cross-Origin Resource Sharing) lets us specify what kind of cross-domain requests are authorized.
-     * See: <a href="https://docs.spring.io/spring-framework/reference/web/webflux-cors.html#webflux-cors-intro">CORS</a>
+     * CORS (Cross-Origin Resource Sharing) lets us specify what kind of cross-domain
+     *  requests are authorized (see: <a href="https://docs.spring.io/spring-framework/reference/web/webflux-cors.html#webflux-cors-intro">CORS</a>).
      *
      * @return                  the created and configured CorsConfigurationSource bean
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Or use Collections.singletonList("*") for all origins
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Apply CORS configuration to all paths
+        // Apply CORS configuration to all paths
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }

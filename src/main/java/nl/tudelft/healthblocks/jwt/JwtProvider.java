@@ -4,6 +4,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
+import javax.crypto.SecretKey;
 import lombok.Getter;
 import nl.tudelft.healthblocks.entities.UserRole;
 import nl.tudelft.healthblocks.service.AuthenticationService;
@@ -12,10 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
  * A class that manages JWTs, i.e. generation, parsing and validation etc.
@@ -34,10 +34,11 @@ public class JwtProvider {
     /**
      * Creates a JwtProvider object with the specified parameters.
      *
-     * @param authenticationService     the authentication service that interacts with the user database
+     * @param authenticationService     the authentication service that interacts with the database
      * @param jwtSecretKey              the secret key to sign the token
      */
-    public JwtProvider(AuthenticationService authenticationService, @Qualifier("secretKey") SecretKey jwtSecretKey) {
+    public JwtProvider(AuthenticationService authenticationService,
+                       @Qualifier("secretKey") SecretKey jwtSecretKey) {
         this.authenticationService = authenticationService;
         this.jwtSecretKey = jwtSecretKey;
     }
@@ -48,7 +49,7 @@ public class JwtProvider {
      *
      * @param userId                    the userID (UUID) of the user who will get the token
      * @param role                      the role of the user who will get the token
-     * @param issueDate                 the date when the token has been issued (the current time is taken)
+     * @param issueDate                 the date when the token has been issued (the current date)
      * @return                          the generated JWT for the user
      */
     public String generateJwtToken(UUID userId, UserRole role, Date issueDate) {
@@ -67,7 +68,7 @@ public class JwtProvider {
      * Checks whether the provided JWT has expired.
      *
      * @param claims                    the claims of JWT (containing some data)
-     * @return                          true if the token has expired, false if it has not expired yet
+     * @return                          true if the token is expired, false if it is not expired
      */
     private boolean isExpired(Jws<Claims> claims) {
         return claims.getPayload().getExpiration().before(new Date());
@@ -75,10 +76,10 @@ public class JwtProvider {
 
     /**
      * Gets the JWT from the HTTP request header.
-     * Note that the JWT is assumed to be sent in the "Authorization" header and start with "Bearer ".
+     * Note that the JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
      * @param request                   the HTTP request with the JWT token
-     * @return                          the actual JWT, i.e. as String without "Bearer " prefix, if present
+     * @return                          the actual JWT, (i.e. String without "Bearer "), if present
      */
     public Optional<String> getJwtFromHeader(HttpServletRequest request) {
         String authenticationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -89,21 +90,26 @@ public class JwtProvider {
     }
 
     /**
-     * Checks whether the JWT is valid and has not expired and extracts the JWT claims (containing some information).
+     * Checks if the JWT is valid and has not expired, and extracts the JWT claims (with some data).
      *
      * @param token                     the JWT token, as String without "Bearer " prefix
      * @return                          the JWT claims if the token is valid and has not expired yet
      */
     public Optional<Jws<Claims>> validateAndParseClaims(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().verifyWith(this.jwtSecretKey).build().parseSignedClaims(token);
+            Jws<Claims> claims = Jwts.parser().verifyWith(this.jwtSecretKey)
+                    .build().parseSignedClaims(token);
             // Check if the fields are valid (userID and role)
             UUID userId = this.getUserId(claims);
-            if (this.getRole(claims).equals(UserRole.UNKNOWN)) return Optional.empty();
+            if (this.getRole(claims).equals(UserRole.UNKNOWN)) {
+                return Optional.empty();
+            }
             // Check if the user with the given userID exists
             this.authenticationService.loadUserByUserId(userId);
             // Check if the JWT has expired
-            if (this.isExpired(claims)) return Optional.empty();
+            if (this.isExpired(claims)) {
+                return Optional.empty();
+            }
             // Since the JWT is valid, return the claims
             return Optional.of(claims);
         } catch (Exception e) {

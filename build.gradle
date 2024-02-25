@@ -6,8 +6,8 @@ plugins {
 }
 
 checkstyle {
-	toolVersion '7.8.1'
-	configFile file("config/checkstyle/checkstyle.xml")
+	toolVersion '10.13.0'
+	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 }
 
 group = 'nl.tudelft.healthblocks'
@@ -60,11 +60,6 @@ dependencies {
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-}
-
-checkstyle {
-	toolVersion "8.37"
-	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 }
 
 tasks.named('test') {

@@ -6,7 +6,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 /**
- * A service class used to send emails (e.g. when registering a user, their credentials are sent to them by email).
+ * A service class used to send emails.
+ * E.g. when registering a user, their credentials are sent to them by email.
  */
 @Service
 @AllArgsConstructor
