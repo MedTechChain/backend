@@ -196,6 +196,7 @@ public class AuthenticationService implements UserDetailsService {
     /**
      * Changes the password of the user with the given username.
      * The provided old (current) password is compared to the actual old (current) password stored in the database.
+     * TODO: implement the endpoint in the controller
      *
      * @param username      the username of the user whose password will be changed
      * @param oldPassword   the old (current) password of the specified user

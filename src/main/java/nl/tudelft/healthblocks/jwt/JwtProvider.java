@@ -23,7 +23,7 @@ public class JwtProvider {
     private final SecretKey jwtSecretKey;
 
     @Getter
-    @Value("${jwt.expirationtime}")
+    @Value("${jwt.expiration-time}")
     private long jwtExpirationTime;
 
     private final AuthenticationService authenticationService;

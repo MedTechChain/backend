@@ -16,8 +16,10 @@ import java.util.UUID;
 /**
  * A class that is used to store the user data.
  * Username is used to log in researcher.
- * UserId is used internally to identify the user (e.g. when deleting a user);
+ * UserID is used internally to identify the user (e.g. when deleting a user);
  *  it is also used as "Subject" in the JWT token used for the authentication.
+ * Email should also be unique, and it is used during the registration
+ *  (to check the existence of the user and to send the credentials to the registered user)
  */
 @Entity
 @Getter @NoArgsConstructor
@@ -101,7 +103,7 @@ public class UserData implements UserDetails {
     /**
      * Gets the authorities granted to the user.
      *
-     * @return the authorities granted to the user
+     * @return              the authorities granted to the user
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -111,8 +113,8 @@ public class UserData implements UserDetails {
     /**
      * Checks whether another user is equal to this user, based on their userIDs.
      *
-     * @param other another user to compare to
-     * @return true if another user is equal to this user, i.e. if their userIDs are equal, false otherwise
+     * @param other         another user to compare to
+     * @return              true if another user is equal to this user, i.e. if their userIDs are equal, false otherwise
      */
     @Override
     public boolean equals(Object other) {
@@ -124,7 +126,7 @@ public class UserData implements UserDetails {
     /**
      * Gets the hash code of the given UserData object.
      *
-     * @return the hash code of the given UserData object
+     * @return              the hash code of the given UserData object
      */
     @Override
     public int hashCode() {
