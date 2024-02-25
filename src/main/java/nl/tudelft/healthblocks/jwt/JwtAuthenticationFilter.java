@@ -30,6 +30,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Performs the authentication step using a JWT (if present).
+     * If the authentication is successful, the principal, the (cleared) credentials and the authorities are set for the authenticated user,
+     *  see: <a href="https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-providermanager">AuthenticationProviderManager</a>.
+     * If the authentication fails, the request is passed to the next filter in the SecurityFilterChain.
      *
      * @param request               the received HTTP request
      * @param response              the HTTP response to be sent back
@@ -54,8 +57,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UUID userId = this.jwtProvider.getUserId(claims.get());
                 UserDetails user = this.authenticationService.loadUserByUserId(userId);
 
-                // Set the principal, (cleared) credentials and authorities for the authenticated user
-                // https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-providermanager
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
