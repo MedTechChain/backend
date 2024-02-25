@@ -51,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         String jwt = resolvedJwt.get();
 
-        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             Optional<Jws<Claims>> claims = this.jwtProvider.validateAndParseClaims(jwt);
             if (claims.isPresent()) {
                 UUID userId = this.jwtProvider.getUserId(claims.get());

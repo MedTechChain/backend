@@ -96,7 +96,7 @@ public class JwtProvider {
      */
     public Optional<Jws<Claims>> validateAndParseClaims(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().decryptWith(this.jwtSecretKey).build().parseSignedClaims(token);
+            Jws<Claims> claims = Jwts.parser().verifyWith(this.jwtSecretKey).build().parseSignedClaims(token);
             // Check if the fields are valid (userID and role)
             UUID userId = this.getUserId(claims);
             if (this.getRole(claims).equals(UserRole.UNKNOWN)) return Optional.empty();

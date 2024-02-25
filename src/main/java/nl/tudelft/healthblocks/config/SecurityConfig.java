@@ -73,9 +73,9 @@ public class SecurityConfig {
                         new JwtAuthenticationFilter(this.authenticationService, this.jwtProvider),
                         UsernamePasswordAuthenticationFilter.class
                 )
-                .formLogin(form -> form
-                        .loginPage("/api/users/login")
-                        .permitAll())
+                //.formLogin(form -> form
+                //       .loginPage("/api/users/login")
+                //        .permitAll())
                 .build();
     }
 

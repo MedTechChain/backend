@@ -1,6 +1,7 @@
 package nl.tudelft.healthblocks.service;
 
 import jakarta.persistence.EntityExistsException;
+import jakarta.transaction.Transactional;
 import nl.tudelft.healthblocks.entities.ResearcherDTO;
 import nl.tudelft.healthblocks.entities.UserData;
 import nl.tudelft.healthblocks.repositories.UserDataRepository;
@@ -25,6 +26,7 @@ import java.util.stream.IntStream;
  * A service class that communicates with the database with the user data.
  */
 @Service
+@Transactional
 public class AuthenticationService implements UserDetailsService {
 
     private final UserDataRepository userDataRepository;
@@ -171,12 +173,12 @@ public class AuthenticationService implements UserDetailsService {
         UserData newUser = new UserData(username, hashedPassword, email, firstName, lastName, affiliation, UserRole.RESEARCHER);
         this.userDataRepository.save(newUser);
 
-        String emailContent = String.format("Dear %s,\n", firstName)
-                + "You have been registered in HealthBlocks. Your default credentials are:\n"
-                + String.format("\tUsername: %s\n\tPassword: %s\n", username, password)
+        String emailContent = String.format("Dear %s,\n\n", firstName)
+                + "You have been registered in HealthBlocks. Your default credentials are:\n\n"
+                + String.format("\tUsername: %s\n\tPassword: %s\n\n", username, password)
                 + "Make sure to change your password, and don't forget to make it secure.\n"
-                + "Suggestion: you can also use a password manager.\n"
-                + String.format("In case you have questions, please contact %s.\n", this.env.getProperty("admin.email"))
+                + "Suggestion: you can also use a password manager.\n\n"
+                + String.format("Should you have any questions, please contact %s.\n\n", this.env.getProperty("admin.email"))
                 + "Best regards,\nHealthBlocks";
         this.emailService.sendSimpleEmail(email, "Welcome to HealthBlocks", emailContent);
     }
