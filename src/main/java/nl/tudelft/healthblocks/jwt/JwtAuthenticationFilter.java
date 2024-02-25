@@ -6,8 +6,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
 import nl.tudelft.healthblocks.service.AuthenticationService;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,34 +18,41 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * A class that represents a custom authentication filter based on JWT.
+ */
+@AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    AuthenticationService authenticationService;
+
+    private final AuthenticationService authenticationService;
 
     private final JwtProvider jwtProvider;
 
-    public JwtAuthenticationFilter(JwtProvider jwtProvider) {
-        this.jwtProvider = jwtProvider;
-    }
-
+    /**
+     * Performs the authentication step using a JWT (if present).
+     *
+     * @param request               the received HTTP request
+     * @param response              the HTTP response to be sent back
+     * @param filterChain           Spring Security filter chain which intercepts and processes incoming requests
+     * @throws ServletException     if something goes wrong in the filter chain
+     * @throws IOException          if something goes wrong in the filter chain
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Get JWT from the Authorization header
         Optional<String> resolvedJwt = this.jwtProvider.getJwtFromHeader(request);
         if (resolvedJwt.isEmpty()) {
             filterChain.doFilter(request, response);
             return;
         }
-        final String jwt = resolvedJwt.get();
+        String jwt = resolvedJwt.get();
 
-        // If the user is not authenticated, validate the JWT
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             Optional<Jws<Claims>> claims = this.jwtProvider.validateAndParseClaims(jwt);
-            // If the JWT is valid, set the user to 'authenticated'
             if (claims.isPresent()) {
-                final UUID userId = this.jwtProvider.getUserId(claims.get());
-                UserDetails user = this.authenticationService.loadUserByUserId(userId); // TODO: maybe change to username?
+                UUID userId = this.jwtProvider.getUserId(claims.get());
+                UserDetails user = this.authenticationService.loadUserByUserId(userId);
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
