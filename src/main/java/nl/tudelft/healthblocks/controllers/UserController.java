@@ -42,7 +42,6 @@ public class UserController {
 
     private final ObjectMapper objectMapper;
 
-
     /**
      * Test endpoint. TODO: remove
      */
