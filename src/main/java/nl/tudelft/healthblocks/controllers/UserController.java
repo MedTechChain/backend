@@ -70,7 +70,7 @@ public class UserController {
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
         UserData user = this.authenticationService.loadUserByUsername(username);
-        String jwt = this.jwtProvider.generateJwtToken(user.getUserId(), user.getRole(), new Date(System.currentTimeMillis()));
+        String jwt = this.jwtProvider.generateJwtToken(user.getUserId(), user.getRole(), new Date());
 
         String responseBody = this.objectMapper.createObjectNode()
                 .put("jwt", jwt)
