@@ -13,9 +13,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * A service class that communicates with the database with the user data.
@@ -129,14 +133,17 @@ public class AuthenticationService implements UserDetailsService {
         return baseUsername + (largestSuffixNumber + 1);
     }
 
+
     /**
-     * Generates a password to log in. The password will be sent to the user by email.
+     * Generates a random 128-ASCII-character password to log in. The password will be sent to the user by email.
+     * The idea has been taken from <a href="https://www.baeldung.com/java-generate-secure-password#using-custom-utility">Baeldung</a>
      *
-     * @return              the generated password
+     * @return              the generated password (consisting of 128 ASCII characters)
      */
     private String generatePassword() {
-        // TODO: implement password generation
-        return "password1";
+        Random random = new SecureRandom();
+        IntStream randomAsciiCodes = random.ints(128, 33, 127);
+        return randomAsciiCodes.mapToObj(code -> String.valueOf((char) code)).collect(Collectors.joining());
     }
 
     /**
