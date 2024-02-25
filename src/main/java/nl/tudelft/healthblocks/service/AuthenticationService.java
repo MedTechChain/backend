@@ -6,6 +6,7 @@ import nl.tudelft.healthblocks.entities.UserData;
 import nl.tudelft.healthblocks.repositories.UserDataRepository;
 import nl.tudelft.healthblocks.entities.UserRole;
 import org.springframework.core.env.Environment;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 /**
  * A service class that communicates with the database with the user data.
+ * TODO: sanitize all user input!!!
  */
 @Service
 public class AuthenticationService implements UserDetailsService {
@@ -100,16 +102,31 @@ public class AuthenticationService implements UserDetailsService {
      * <p>
      * The username is created as follows: the first letter of the first name is prepended to the last name.
      * E.g. John Doe would get the username jdoe.
-     * In case of ties, an integer is appended to the username.
-     * E.g. the second John Doe would get the username jdoe-1, the third would get jdoe-2 etc.
+     * In case of ties, a number is appended to the username.
+     * E.g. the second John Doe would get the username jdoe1, the third would get jdoe2 etc.
      *
      * @param firstName     the first name of the user
      * @param lastName      the last name of the user
      * @return              the generated username
      */
     private String generateUsername(String firstName, String lastName) {
-        // TODO: implement username generation
-        return "Alin";
+        if (firstName.isEmpty() || lastName.isEmpty()) {
+            throw new DataIntegrityViolationException("Empty first or last names");
+        }
+
+        String baseUsername = (firstName.charAt(0) + lastName).toLowerCase();
+        List<String> similarUsernames = this.userDataRepository.findAllUsernamesByPrefix(baseUsername);
+        if (similarUsernames.isEmpty()) {
+            return baseUsername;
+        }
+
+        // The returned usernames are already sorted (ascending)
+        String largestSuffix = similarUsernames.getLast().replaceFirst("^" + baseUsername, "");
+        if (largestSuffix.isEmpty()) {
+            return baseUsername + "1";
+        }
+        long largestSuffixNumber = Long.parseLong(largestSuffix);
+        return baseUsername + (largestSuffixNumber + 1);
     }
 
     /**

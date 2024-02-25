@@ -24,6 +24,19 @@ public interface UserDataRepository extends JpaRepository<UserData, UUID> {
      */
     Optional<UserData> findByUsername(String username);
 
+
+    /**
+     * Finds all usernames that start with the same prefix as the one provided.
+     * This is used for username generation, to append a number in case of multiple users with the same base username.
+     * E.g. if a new user John Doe is being registered, then 'jdoe' is the base username; in this case
+     *   jdoe1, jdoe2, ..., jdoe`n` will be retrieved.
+     *
+     * @param prefix    the prefix that a username should start with
+     * @return          a list of found usernames
+     */
+    @Query("SELECT username FROM UserData WHERE role = 1 AND username ILIKE :prefix||'%' ORDER BY username ASC ")
+    List<String> findAllUsernamesByPrefix(String prefix);
+
     /**
      * Finds a user by their userID.
      *
@@ -47,7 +60,7 @@ public interface UserDataRepository extends JpaRepository<UserData, UUID> {
      * @return          a list of found researchers (their userID, first name, last name, email and affiliation)
      */
     @Query("SELECT new nl.tudelft.healthblocks.entities.ResearcherDTO(userId, firstName, lastName, email, affiliation) "
-            + "FROM UserData where role = 1")
+            + "FROM UserData WHERE role = 1")
     List<ResearcherDTO> findAllResearchers();
 
     /**
