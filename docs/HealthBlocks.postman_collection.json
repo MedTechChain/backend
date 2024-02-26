@@ -1,0 +1,670 @@
+{
+	"info": {
+		"_postman_id": "70ba28ec-0e2d-44ed-83ee-838b020a1d08",
+		"name": "HealthBlocks",
+		"description": "Backend API for the User Management Server",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18550693"
+	},
+	"item": [
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Register New Researcher",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+								"description": "JWT",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"email\": \"J.Doe@tudelft.nl\",\n    \"affiliation\": \"Delft University of Technology\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8088/api/users/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8088",
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						},
+						"description": "The generated username and password will be sent to the specified email."
+					},
+					"response": [
+						{
+							"name": "Register New Researcher",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+										"description": "JWT",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"email\": \"J.Doe@tudelft.nl\",\n    \"affiliation\": \"Delft University of Technology\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8088/api/users/register",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8088",
+									"path": [
+										"api",
+										"users",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "0"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 26 Feb 2024 05:08:27 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Get All Researchers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+								"description": "JWT",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8088/api/users/researchers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8088",
+							"path": [
+								"api",
+								"users",
+								"researchers"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get All Researchers",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+										"description": "JWT",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8088/api/users/researchers",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8088",
+									"path": [
+										"api",
+										"users",
+										"researchers"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "384"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 26 Feb 2024 05:15:25 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "[ {\n  \"user_id\" : \"8eeda5c8-8a4c-47de-bdac-880e8c69c233\",\n  \"first_name\" : \"John\",\n  \"last_name\" : \"Doe\",\n  \"email\" : \"J.Doe@tudelft.nl\",\n  \"affiliation\" : \"Delft University of Technology\"\n}, {\n  \"user_id\" : \"0abe1518-07a1-4782-a2fa-af4a5a2adf6b\",\n  \"first_name\" : \"Jane\",\n  \"last_name\" : \"Doe\",\n  \"email\" : \"J.Doe-1@tudelft.nl\",\n  \"affiliation\" : \"Delft University of Technology\"\n} ]"
+						}
+					]
+				},
+				{
+					"name": "Get Filtered Researchers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+								"description": "JWT",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8088/api/users/researchers?first_name=John&last_name=Doe&affiliation=Delft University of Technology",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8088",
+							"path": [
+								"api",
+								"users",
+								"researchers"
+							],
+							"query": [
+								{
+									"key": "first_name",
+									"value": "John"
+								},
+								{
+									"key": "last_name",
+									"value": "Doe"
+								},
+								{
+									"key": "affiliation",
+									"value": "Delft University of Technology"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Personal Details",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+								"description": "JWT",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"jdoe\",\n    \"first_name\": \"Johnny\",\n    \"last_name\": \"Doe\",\n    \"email\": \"J.Doe@tudelft.nl\",\n    \"affiliation\": \"Delft University of Technology\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8088/api/users/change_details",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8088",
+							"path": [
+								"api",
+								"users",
+								"change_details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Researcher",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+								"description": "JWT",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8088/api/users/delete?user_id=8eeda5c8-8a4c-47de-bdac-880e8c69c233",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8088",
+							"path": [
+								"api",
+								"users",
+								"delete"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "8eeda5c8-8a4c-47de-bdac-880e8c69c233"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Delete Researcher",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+										"description": "JWT",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8088/api/users/delete?user_id=8eeda5c8-8a4c-47de-bdac-880e8c69c233",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8088",
+									"path": [
+										"api",
+										"users",
+										"delete"
+									],
+									"query": [
+										{
+											"key": "user_id",
+											"value": "8eeda5c8-8a4c-47de-bdac-880e8c69c233"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "0"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 26 Feb 2024 05:28:11 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			],
+			"description": "Can do everything, i.e. the admin can do everything that a researcher can and more."
+		},
+		{
+			"name": "Researcher",
+			"item": [
+				{
+					"name": "Log In",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"jdoe\",\n    \"password\": \"%n&Z*4vRj@q@S9ww3eUpX))4)s7&p+)8W]TljG4i\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8088/api/users/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8088",
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Log In",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"jdoe\",\n    \"password\": \"%n&Z*4vRj@q@S9ww3eUpX))4)s7&p+)8W]TljG4i\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8088/api/users/login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8088",
+									"path": [
+										"api",
+										"users",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=ISO-8859-1"
+								},
+								{
+									"key": "Content-Length",
+									"value": "244"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 26 Feb 2024 05:23:33 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"jwt\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3NTlhYTIwYy0zMTA2LTRhYzgtODNjNi02MjQzMGUzMTYxNDkiLCJyb2xlIjoiUkVTRUFSQ0hFUiIsImlhdCI6MTcwODkyNTAxMywiZXhwIjoxNzA4OTI4NjEzfQ.QiEpuZOzpUHE8bKWJ35nIqTjSw835pa-7HPgSl-HUJI\",\n    \"token_type\": \"JWT\",\n    \"expires_in\": 60\n}"
+						}
+					]
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+								"description": "JWT token",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"jdoe\",\n    \"old_password\": \"%n&Z*4vRj@q@S9ww3eUpX))4)s7&p+)8W]TljG4i\",\n    \"new_password\": \"a$Ysit,kw%,6,!,W{i[vci#56q&[.+]r'M$P+#{n\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8088/api/users/change_password",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8088",
+							"path": [
+								"api",
+								"users",
+								"change_password"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "A researcher can only log in, change their password and query the chain."
+		}
+	]
+}
