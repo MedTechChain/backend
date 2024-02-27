@@ -2,7 +2,7 @@ package nl.tudelft.healthblocks.config;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import nl.tudelft.healthblocks.entities.UserRole;
+import nl.tudelft.healthblocks.model.UserRole;
 import nl.tudelft.healthblocks.jwt.JwtAuthenticationFilter;
 import nl.tudelft.healthblocks.jwt.JwtProvider;
 import nl.tudelft.healthblocks.service.AuthenticationService;
@@ -113,6 +113,8 @@ public class SecurityConfig {
      *  requests are authorized (see: <a href="https://docs.spring.io/spring-framework/reference/web/webflux-cors.html#webflux-cors-intro">CORS</a>).
      *
      * @return                  the created and configured CorsConfigurationSource bean
+     *
+     * TODO: Take origin from configuration
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

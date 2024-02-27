@@ -9,9 +9,9 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import nl.tudelft.healthblocks.entities.ResearcherDto;
-import nl.tudelft.healthblocks.entities.UserData;
-import nl.tudelft.healthblocks.entities.UserRole;
+import nl.tudelft.healthblocks.model.Researcher;
+import nl.tudelft.healthblocks.model.UserData;
+import nl.tudelft.healthblocks.model.UserRole;
 import nl.tudelft.healthblocks.repositories.UserDataRepository;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -35,15 +35,11 @@ public class AuthenticationService implements UserDetailsService {
 
     private final EmailService emailService;
 
-    private final Environment env;
-
     /**
      * Creates an AuthenticationService object with the specified values.
-     * In addition, it creates the admin user with the default details (if they do not exist).
      *
      * @param userDataRepository    the database to store the user data
      * @param passwordEncoder       the password encoder to hash user passwords
-     * @param env                   the Spring environment (used to get admin default details)
      */
     public AuthenticationService(UserDataRepository userDataRepository,
                                  PasswordEncoder passwordEncoder,
@@ -52,28 +48,6 @@ public class AuthenticationService implements UserDetailsService {
         this.userDataRepository = userDataRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
-        this.env = env;
-
-        // If the admin user does not exist, create one
-        if (this.userDataRepository.findByUsername(env.getProperty("admin.username")).isEmpty()) {
-            this.createAdmin();
-        }
-    }
-
-    /**
-     * Creates the administrator user with the default details.
-     */
-    private void createAdmin() {
-        UserData admin = new UserData(
-                this.env.getProperty("admin.username"),
-                this.passwordEncoder.encode(this.env.getProperty("admin.password")),
-                this.env.getProperty("admin.email"),
-                this.env.getProperty("admin.first-name"),
-                this.env.getProperty("admin.last-name"),
-                this.env.getProperty("admin.affiliation"),
-                UserRole.ADMIN
-        );
-        this.userDataRepository.save(admin);
     }
 
     /**
@@ -193,8 +167,6 @@ public class AuthenticationService implements UserDetailsService {
                 + String.format("\tUsername: %s\n\tPassword: %s\n\n", username, password)
                 + "Make sure to change your password, and don't forget to make it secure.\n"
                 + "Suggestion: you can also use a password manager.\n\n"
-                + String.format("Should you have any questions, please contact %s.\n\n",
-                    this.env.getProperty("admin.email"))
                 + "Best regards,\nHealthBlocks";
         this.emailService.sendSimpleEmail(email, "Welcome to HealthBlocks", emailContent);
     }
@@ -205,7 +177,7 @@ public class AuthenticationService implements UserDetailsService {
      *
      * @return              a list of retrieved researchers (with the information specified above)
      */
-    public List<ResearcherDto> getAllResearchers() {
+    public List<Researcher> getAllResearchers() {
         return this.userDataRepository.findAllResearchers();
     }
 

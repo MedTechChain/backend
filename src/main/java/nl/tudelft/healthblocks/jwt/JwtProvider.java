@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 import lombok.Getter;
-import nl.tudelft.healthblocks.entities.UserRole;
+import nl.tudelft.healthblocks.model.UserRole;
 import nl.tudelft.healthblocks.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

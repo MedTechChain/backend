@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.entities;
+package nl.tudelft.healthblocks.model;
 
 /**
  * An enum class used to represent different user roles.

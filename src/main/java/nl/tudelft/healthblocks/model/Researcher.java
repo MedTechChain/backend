@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.entities;
+package nl.tudelft.healthblocks.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResearcherDto {
+public class Researcher {
 
     @JsonProperty("user_id")
     private UUID userId;

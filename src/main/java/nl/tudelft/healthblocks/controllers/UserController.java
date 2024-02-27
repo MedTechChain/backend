@@ -13,9 +13,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
-import nl.tudelft.healthblocks.entities.ResearcherDto;
-import nl.tudelft.healthblocks.entities.UserData;
-import nl.tudelft.healthblocks.entities.UserRole;
+import nl.tudelft.healthblocks.model.Researcher;
+import nl.tudelft.healthblocks.model.UserData;
+import nl.tudelft.healthblocks.model.UserRole;
 import nl.tudelft.healthblocks.jwt.JwtProvider;
 import nl.tudelft.healthblocks.service.AuthenticationService;
 import org.springframework.http.HttpHeaders;
@@ -171,7 +171,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
         }
 
-        List<ResearcherDto> researchers = this.authenticationService.getAllResearchers();
+        List<Researcher> researchers = this.authenticationService.getAllResearchers();
         String responseBody = this.objectMapper
                 .writerWithDefaultPrettyPrinter().writeValueAsString(researchers);
         response.getWriter().write(responseBody);

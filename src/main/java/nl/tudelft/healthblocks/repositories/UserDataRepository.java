@@ -3,8 +3,8 @@ package nl.tudelft.healthblocks.repositories;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import nl.tudelft.healthblocks.entities.ResearcherDto;
-import nl.tudelft.healthblocks.entities.UserData;
+import nl.tudelft.healthblocks.model.Researcher;
+import nl.tudelft.healthblocks.model.UserData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -62,10 +62,10 @@ public interface UserDataRepository extends JpaRepository<UserData, UUID> {
      * @return          a list of found researchers
      *                  (their userID, first name, last name, email and affiliation)
      */
-    @Query("SELECT new nl.tudelft.healthblocks.entities."
-            + "ResearcherDto(userId, firstName, lastName, email, affiliation) "
+    @Query("SELECT new nl.tudelft.healthblocks.model."
+            + "Researcher(userId, firstName, lastName, email, affiliation) "
             + "FROM UserData WHERE role = 1")
-    List<ResearcherDto> findAllResearchers();
+    List<Researcher> findAllResearchers();
 
     /**
      * Deletes a user with the specified userID.
