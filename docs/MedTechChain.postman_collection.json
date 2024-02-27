@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "70ba28ec-0e2d-44ed-83ee-838b020a1d08",
-		"name": "HealthBlocks",
+		"name": "MedTech Chain",
 		"description": "Backend API for the User Management Server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "18550693"

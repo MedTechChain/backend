@@ -1,4 +1,4 @@
-# HealthBlocks
+# MedTech Chain
 
 Backend API for the User Management Server.
 

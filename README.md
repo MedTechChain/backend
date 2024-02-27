@@ -1,10 +1,9 @@
-# HeartBlocks - Backend
+# MedTech Chain - Backend
 
 ## Description
 
-The backend part of HealthBlocks project. In particular, this repository contains the User Management Server,
-used to create, retrieve, update and delete researchers. In addition, authenticated researchers can perform queries on
-the Hyperledger Fabric Blockchain.
+The backend part of MedTech Chain project. In particular, this repository contains the User Management Server,
+used to create, retrieve, update and delete researchers. In addition, authenticated researchers can perform queries on the Hyperledger Fabric Blockchain.
 
 The application uses Java Spring Boot (version 3.2.2) and Spring Security. The required Java version is 21.
 Gradle is used as the build tool and for running other tasks (such as Checkstyle or tests).
