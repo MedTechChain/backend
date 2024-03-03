@@ -330,7 +330,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"jdoe\",\n    \"first_name\": \"Johnny\",\n    \"last_name\": \"Doe\",\n    \"email\": \"J.Doe@tudelft.nl\",\n    \"affiliation\": \"Delft University of Technology\"\n}",
+							"raw": "{\n    \"first_name\": \"Johnny\",\n    \"last_name\": \"Doe\",\n    \"affiliation\": \"Delft University of Technology\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -338,7 +338,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8088/api/users/change_details",
+							"raw": "http://localhost:8088/api/users/update?user_id=8eeda5c8-8a4c-47de-bdac-880e8c69c233",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -347,7 +347,13 @@
 							"path": [
 								"api",
 								"users",
-								"change_details"
+								"update"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "8eeda5c8-8a4c-47de-bdac-880e8c69c233"
+								}
 							]
 						}
 					},

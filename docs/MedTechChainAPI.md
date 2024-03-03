@@ -131,7 +131,7 @@ curl --location 'http://localhost:8088/api/users/researchers' \
 
 ### Update Personal Details
 
-`PUT http://localhost:8088/api/users/change_details`
+`PUT http://localhost:8088/api/users/update?user_id=8eeda5c8-8a4c-47de-bdac-880e8c69c233`
 
 #### Request Headers
 
@@ -140,14 +140,18 @@ curl --location 'http://localhost:8088/api/users/researchers' \
 | Content-Type  | application/json                                                                                                                        |
 | Authorization | Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk |
 
+#### Query Parameters
+
+| Parameter | Value                                |
+|-----------|--------------------------------------|
+| user_id   | 8eeda5c8-8a4c-47de-bdac-880e8c69c233 |
+
 #### Body
 
 ```json
 {
-  "username": "jdoe",
   "first_name": "Johnny",
   "last_name": "Doe",
-  "email": "J.Doe@tudelft.nl",
   "affiliation": "Delft University of Technology"
 }
 ```
