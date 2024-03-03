@@ -53,7 +53,7 @@ You can substitute `gradle` with`./gradlew`/`\.gradlew.bat`.
 
 ### IntelliJ
 
-Navigate to [src/main/java/nl/tudelft/healthblocks/Application.java](src/main/java/nl/tudelft/healthblocks/Application.java),
+Navigate to [src/main/java/nl/tudelft/medtechchain/Application.java](src/main/java/nl/tudelft/medtechchain/Application.java),
 right click on it and press `Run 'Application'`.
 
 ### Accessing endpoints

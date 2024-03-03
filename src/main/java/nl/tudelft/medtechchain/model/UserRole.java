@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.model;
+package nl.tudelft.medtechchain.model;
 
 /**
  * An enum class used to represent different user roles.

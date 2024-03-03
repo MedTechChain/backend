@@ -10,7 +10,7 @@ checkstyle {
 	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 }
 
-group = 'nl.tudelft.healthblocks'
+group = 'nl.tudelft.medtechchain'
 version = '1.0.0'
 
 java {

@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.service;
+package nl.tudelft.medtechchain.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;

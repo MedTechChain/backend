@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.jwt;
+package nl.tudelft.medtechchain.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
-import nl.tudelft.healthblocks.service.AuthenticationService;
+import nl.tudelft.medtechchain.service.AuthenticationService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;

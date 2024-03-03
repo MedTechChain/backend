@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.model;
+package nl.tudelft.medtechchain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.config;
+package nl.tudelft.medtechchain.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

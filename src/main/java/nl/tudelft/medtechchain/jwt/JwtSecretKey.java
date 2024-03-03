@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.jwt;
+package nl.tudelft.medtechchain.jwt;
 
 import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;

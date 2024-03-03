@@ -1,10 +1,10 @@
-package nl.tudelft.healthblocks.repositories;
+package nl.tudelft.medtechchain.repositories;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import nl.tudelft.healthblocks.model.Researcher;
-import nl.tudelft.healthblocks.model.UserData;
+import nl.tudelft.medtechchain.model.Researcher;
+import nl.tudelft.medtechchain.model.UserData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -62,7 +62,7 @@ public interface UserDataRepository extends JpaRepository<UserData, UUID> {
      * @return          a list of found researchers
      *                  (their userID, first name, last name, email and affiliation)
      */
-    @Query("SELECT new nl.tudelft.healthblocks.model."
+    @Query("SELECT new nl.tudelft.medtechchain.model."
             + "Researcher(userId, firstName, lastName, email, affiliation) "
             + "FROM UserData WHERE role = 1")
     List<Researcher> findAllResearchers();

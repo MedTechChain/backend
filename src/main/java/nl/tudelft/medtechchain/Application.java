@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks;
+package nl.tudelft.medtechchain;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

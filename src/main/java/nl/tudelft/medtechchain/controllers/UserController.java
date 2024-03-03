@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.controllers;
+package nl.tudelft.medtechchain.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,11 +13,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
-import nl.tudelft.healthblocks.jwt.JwtProvider;
-import nl.tudelft.healthblocks.model.Researcher;
-import nl.tudelft.healthblocks.model.UserData;
-import nl.tudelft.healthblocks.model.UserRole;
-import nl.tudelft.healthblocks.service.AuthenticationService;
+import nl.tudelft.medtechchain.jwt.JwtProvider;
+import nl.tudelft.medtechchain.model.Researcher;
+import nl.tudelft.medtechchain.model.UserData;
+import nl.tudelft.medtechchain.model.UserRole;
+import nl.tudelft.medtechchain.service.AuthenticationService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

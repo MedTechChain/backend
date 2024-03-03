@@ -3,62 +3,62 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16.2
-    container_name: healthblocks-postgres
+    container_name: medtechchain-postgres
     profiles:
       - deps
       - dev
       - demo
     command: postgres
     environment:
-      - POSTGRES_DB=healthblocks
+      - POSTGRES_DB=medtechchain
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
     ports:
       - "5432:5432"
     networks:
-      - healthblocks-ums
+      - medtechchain-ums
     volumes:
       - postgres_storage:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4:8.3
-    container_name: healthblocks-pgadmin
+    container_name: medtechchain-pgadmin
     profiles:
       - deps
       - dev
       - demo
     restart: always
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@healthblocks.nl
+      - PGADMIN_DEFAULT_EMAIL=admin@medtechchain.nl
       - PGADMIN_DEFAULT_PASSWORD=admin
     ports:
       - "10000:80"
     networks:
-      - healthblocks-ums
+      - medtechchain-ums
     volumes:
       - pgadmin_storage:/var/lib/pgadmin
 
   smtp4dev:
     image: rnwood/smtp4dev:3.3.2
-    container_name: healthblocks-smtp4dev
+    container_name: medtechchain-smtp4dev
     profiles:
       - deps
       - dev
     restart: always
     environment:
-      - ServerOptions__HostName=healthblocks.nl
+      - ServerOptions__HostName=medtechchain.nl
     ports:
       - "11000:8080"
       - "25:25"
       - "143:143"
     networks:
-      - healthblocks-ums
+      - medtechchain-ums
     volumes:
       - smtp4dev_storage:/smtp4dev
 
-  healthblocks-backend-ums-dev: &healthblocks-backend-ums-dev
+  medtechchain-backend-ums-dev: &medtechchain-backend-ums-dev
     image: ${BE_IMAGE_NAME}
-    container_name: healthblocks-backend-ums
+    container_name: medtechchain-backend-ums
     depends_on:
       - postgres
     profiles:
@@ -69,11 +69,11 @@ services:
     ports:
       - "8088:8088"
     networks:
-      - healthblocks-ums
+      - medtechchain-ums
 
-  healthblocks-backend-ums:
-    <<: *healthblocks-backend-ums-dev
-    container_name: healthblocks-backend-ums
+  medtechchain-backend-ums:
+    <<: *medtechchain-backend-ums-dev
+    container_name: medtechchain-backend-ums
     profiles:
       - demo
     environment:
@@ -86,8 +86,8 @@ services:
       - SMTP_TLS=true
 
 networks:
-  healthblocks-ums:
-    name: healthblocks-ums
+  medtechchain-ums:
+    name: medtechchain-ums
 
 volumes:
   postgres_storage:

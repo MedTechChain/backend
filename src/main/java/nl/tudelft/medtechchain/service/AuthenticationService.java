@@ -1,4 +1,4 @@
-package nl.tudelft.healthblocks.service;
+package nl.tudelft.medtechchain.service;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.transaction.Transactional;
@@ -9,10 +9,10 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import nl.tudelft.healthblocks.model.Researcher;
-import nl.tudelft.healthblocks.model.UserData;
-import nl.tudelft.healthblocks.model.UserRole;
-import nl.tudelft.healthblocks.repositories.UserDataRepository;
+import nl.tudelft.medtechchain.model.Researcher;
+import nl.tudelft.medtechchain.model.UserData;
+import nl.tudelft.medtechchain.model.UserRole;
+import nl.tudelft.medtechchain.repositories.UserDataRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
