@@ -13,10 +13,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
+import nl.tudelft.healthblocks.jwt.JwtProvider;
 import nl.tudelft.healthblocks.model.Researcher;
 import nl.tudelft.healthblocks.model.UserData;
 import nl.tudelft.healthblocks.model.UserRole;
-import nl.tudelft.healthblocks.jwt.JwtProvider;
 import nl.tudelft.healthblocks.service.AuthenticationService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,6 +26,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -147,8 +148,6 @@ public class UserController {
         String affiliation = jsonNode.get("affiliation").asText();
 
         this.authenticationService.registerNewUser(email, firstName, lastName, affiliation);
-
-        // TODO: Send an email with a password
     }
 
     /**
@@ -181,6 +180,41 @@ public class UserController {
     // public void getFilteredResearchers() {}
 
     /**
+     * Updates the personal details of the user with the given userID,
+     *  which should be passed as a query parameter user_id.
+     * The personal details to be updated are first name, last name and affiliation,
+     *  which should be passed in a JSON body (first_name, last_name and affiliation).
+     * In case only one of the fields is to be updated, all three have to be specified,
+     *  with the same (old) values for the fields that remain the same.
+     * Only admin is allowed to perform this operation, which will be checked using the JWT.
+     * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
+     *
+     * @param request           the HTTP request with the JWT and the data about the user
+     * @throws IOException      if something goes wrong during the JSON deserialization process
+     */
+    @PutMapping("/update")
+    @ResponseStatus(HttpStatus.OK)
+    public void changePersonalDetails(HttpServletRequest request) throws IOException {
+        Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
+        if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
+        }
+
+        JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
+        String firstName = jsonNode.get("first_name").asText();
+        String lastName = jsonNode.get("last_name").asText();
+        String affiliation = jsonNode.get("affiliation").asText();
+
+        UUID userId;
+        try {
+            userId = UUID.fromString(request.getParameter("user_id"));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        this.authenticationService.updateUser(userId, firstName, lastName, affiliation);
+    }
+
+    /**
      * Deletes the user with the given userID, which should be passed as a query parameter user_id.
      * Only admin is allowed to perform this operation, which will be checked using the JWT.
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
@@ -207,7 +241,4 @@ public class UserController {
 
     // @PutMapping("/change_password")
     // public void changePassword(HttpServletRequest request, HttpServletResponse response) {}
-
-    // @PutMapping("/change_details")
-    // public void changePersonalDetails() {}
 }

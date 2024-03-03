@@ -13,7 +13,6 @@ import nl.tudelft.healthblocks.model.Researcher;
 import nl.tudelft.healthblocks.model.UserData;
 import nl.tudelft.healthblocks.model.UserRole;
 import nl.tudelft.healthblocks.repositories.UserDataRepository;
-import org.springframework.core.env.Environment;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -43,8 +42,7 @@ public class AuthenticationService implements UserDetailsService {
      */
     public AuthenticationService(UserDataRepository userDataRepository,
                                  PasswordEncoder passwordEncoder,
-                                 EmailService emailService,
-                                 Environment env) {
+                                 EmailService emailService) {
         this.userDataRepository = userDataRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
@@ -182,6 +180,25 @@ public class AuthenticationService implements UserDetailsService {
     }
 
     /**
+     * Updates the personal details of the user.
+     * The personal details that are updated are first name, last name and affiliation.
+     *
+     * @param userId        the userID (UUID) of the user to be updated
+     * @param firstName     the first name of the user to be updated
+     * @param lastName      the last name of the user to be updated
+     * @param affiliation   the affiliation of the user to be updated
+     */
+    public void updateUser(UUID userId, String firstName, String lastName, String affiliation) {
+        UserData user = this.loadUserByUserId(userId);
+
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setAffiliation(affiliation);
+
+        this.userDataRepository.save(user);
+    }
+
+    /**
      * Deletes the user with the specified userID (UUID).
      *
      * @param userId        the userID of the user to be deleted
@@ -205,7 +222,7 @@ public class AuthenticationService implements UserDetailsService {
      * @param newPassword   the new password for the specified user
      */
     public void changePassword(String username, String oldPassword, String newPassword) {
-        UserData user = loadUserByUsername(username);
+        UserData user = this.loadUserByUsername(username);
         if (!this.passwordEncoder.encode(oldPassword).equals(user.getPassword())) {
             throw new BadCredentialsException("Provided old password does not match the actual");
         }
