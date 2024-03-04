@@ -24,11 +24,11 @@ fi
 BE_DIR="$SCRIPT_DIR/.."
 cd "$BE_DIR"
 
-BE_IMAGE_NAME="healthblocks/backend-ums"
+BE_IMAGE_NAME="medtechchain/backend-ums"
 export BE_IMAGE_NAME
 
 ./gradlew bootBuildImage --imageName="$BE_IMAGE_NAME"
 
 cd "$SCRIPT_DIR"
 
-docker-compose --profile "$1" -p healthblocks-ums up -d
+docker-compose --profile "$1" -p medtechchain-ums up -d
