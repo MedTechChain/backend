@@ -161,12 +161,12 @@ public class AuthenticationService implements UserDetailsService {
 
         // TODO: replace with some sort of template
         String emailContent = String.format("Dear %s,\n\n", firstName)
-                + "You have been registered in HealthBlocks. Your default credentials are:\n\n"
+                + "You have been registered in MedTech Chain. Your default credentials are:\n\n"
                 + String.format("\tUsername: %s\n\tPassword: %s\n\n", username, password)
                 + "Make sure to change your password, and don't forget to make it secure.\n"
                 + "Suggestion: you can also use a password manager.\n\n"
-                + "Best regards,\nHealthBlocks";
-        this.emailService.sendSimpleEmail(email, "Welcome to HealthBlocks", emailContent);
+                + "Best regards,\nMedTech Chain";
+        this.emailService.sendSimpleEmail(email, "Welcome to MedTech Chain", emailContent);
     }
 
     /**
