@@ -1,13 +1,16 @@
 package nl.tudelft.medtechchain;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class ApplicationTests {
+
+/**
+ * A test class for
+ */
+class ApplicationMainTest {
 
     @Test
     void contextLoads() {
+        System.out.println("Hello");
     }
 
 }

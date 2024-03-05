@@ -35,15 +35,14 @@ public class UserData implements UserDetails {
     @Column(name = "user_id", unique = true, nullable = false, updatable = false)
     private UUID userId;
 
-    @Column(name = "username", length = 30, unique = true, nullable = false)
+    @Column(name = "username", length = 30, unique = true, nullable = false, updatable = false)
     private String username;
 
     @Setter
     @Column(name = "password", length = 128, nullable = false)
     private String password;
 
-    @Setter
-    @Column(name = "email", length = 50, nullable = false, unique = true)
+    @Column(name = "email", length = 50, unique = true, nullable = false, updatable = false)
     private String email;
 
     @Setter
@@ -55,10 +54,9 @@ public class UserData implements UserDetails {
     private String lastName;
 
     @Setter
-    @Column(name = "affiliation", length = 50)
+    @Column(name = "affiliation", length = 50, nullable = false)
     private String affiliation;
 
-    @Setter
     @Column(name = "role", nullable = false)
     private UserRole role;
 
@@ -139,6 +137,6 @@ public class UserData implements UserDetails {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(this.username);
+        return Objects.hash(this.userId);
     }
 }
