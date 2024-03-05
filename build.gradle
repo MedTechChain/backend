@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.2.2'
 	id 'io.spring.dependency-management' version '1.1.4'
 	id 'checkstyle'
+	id 'jacoco'
 }
 
 checkstyle {
@@ -66,6 +67,45 @@ dependencies {
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 }
 
-tasks.named('test') {
+test {
 	useJUnitPlatform()
+	jacoco {
+		enabled = true
+		includes = ['nl.tudelft.medtechchain.*']
+		excludes = []
+	}
+	finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestCoverageVerification() {
+	dependsOn test
+	violationRules {
+		rule {
+			enabled = true
+			element = 'CLASS'
+			includes = ['nl.tudelft.medtechchain.*']
+
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				// minimum = 0.1
+			}
+		}
+	}
+}
+
+tasks.register("codeCoverageReport", JacocoReport) {
+	// (https://docs.gradle.org/current/userguide/jacoco_plugin.html)
+	// Task derived from an official gradle example. Responsible for aggregating the code coverage reports.
+	dependsOn {
+		test
+		jacocoTestCoverageVerification
+	}
+
+	// Output html (used to extract coverage percentage)
+	reports {
+		xml.required = false
+		csv.required = false
+		html.required = true
+	}
 }
