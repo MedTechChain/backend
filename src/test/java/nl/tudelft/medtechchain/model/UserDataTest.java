@@ -1,13 +1,12 @@
 package nl.tudelft.medtechchain.model;
 
+import java.util.Collection;
+import java.util.Set;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.Collection;
-import java.util.Set;
 
 public class UserDataTest {
 

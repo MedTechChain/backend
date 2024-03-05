@@ -12,16 +12,16 @@ INSERT INTO user_data
     role,
     username)
 VALUES
-    ('28f2124c-e6eb-4b99-a749-4a54ea0bccb6',
+    ('87f8304e-4740-45e6-9934-1bce37ac3d1b',
     true,
     true,
-    'HealthBlocks',
+    'MedTech Chain',
     true,
-    'ivan.andrews@medtechchain.nl',
+    'admin.test@medtechchain.nl',
     true,
-    'Ivan',
-    'Andrews',
-    '$2a$12$6eC3khhEr21kFmKQrUWl.Opl6/ol.0pdVlnOe/0ehlDqZZe/9rE5i',
+    'Admin',
+    'Test',
+    '$2a$12$p7ghltJaGDIM9txtLU7O.O9xbcaXNz/nPfx.GAraFZCPUlaDCY4aa',
     0,
     'iandrews')
 ON CONFLICT (user_id) DO NOTHING;

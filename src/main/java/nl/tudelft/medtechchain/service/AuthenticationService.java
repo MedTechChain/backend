@@ -144,6 +144,10 @@ public class AuthenticationService implements UserDetailsService {
      */
     public void registerNewUser(String email, String firstName,
                                 String lastName, String affiliation) {
+        if (firstName == null || lastName == null) {
+            throw new DataIntegrityViolationException("First and last name must be non-null");
+        }
+
         // Check if the user with the email as the one provided already exists
         if (this.userDataRepository.findByEmail(email).isPresent()) {
             throw new EntityExistsException(
