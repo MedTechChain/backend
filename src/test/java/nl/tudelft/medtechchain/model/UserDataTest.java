@@ -20,111 +20,111 @@ public class UserDataTest {
     }
 
     @Test
-    public void getUsername() {
+    public void testGetUsername() {
         Assertions.assertThat(user.getUsername()).isEqualTo("jdoe");
     }
 
     @Test
-    public void getPassword() {
+    public void testGetPassword() {
         Assertions.assertThat(user.getPassword()).isEqualTo("plaintextfornow");
     }
 
     @Test
-    public void getEmail() {
+    public void testGetEmail() {
         Assertions.assertThat(user.getEmail()).isEqualTo("john.doe@tudelft.nl");
     }
 
     @Test
-    public void getFirstName() {
+    public void testGetFirstName() {
         Assertions.assertThat(user.getFirstName()).isEqualTo("John");
     }
 
     @Test
-    public void getLastName() {
+    public void testGetLastName() {
         Assertions.assertThat(user.getLastName()).isEqualTo("Doe");
     }
 
     @Test
-    public void getAffiliation() {
+    public void testGetAffiliation() {
         Assertions.assertThat(user.getAffiliation()).isEqualTo("Delft University of Technology");
     }
 
     @Test
-    public void getRole() {
+    public void testGetRole() {
         Assertions.assertThat(user.getRole()).isEqualTo(UserRole.RESEARCHER);
     }
 
     @Test
-    public void isAccountNonExpired() {
+    public void testIsAccountNonExpired() {
         Assertions.assertThat(user.isAccountNonExpired()).isTrue();
     }
 
     @Test
-    public void isAccountNonLocked() {
+    public void testIsAccountNonLocked() {
         Assertions.assertThat(user.isAccountNonLocked()).isTrue();
     }
 
     @Test
-    public void isCredentialsNonExpired() {
+    public void testIsCredentialsNonExpired() {
         Assertions.assertThat(user.isCredentialsNonExpired()).isTrue();
     }
 
     @Test
-    public void isEnabled() {
+    public void testIsEnabled() {
         Assertions.assertThat(user.isEnabled()).isTrue();
     }
 
     @Test
-    public void setPassword() {
+    public void testSetPassword() {
         user.setPassword("thisisalsonotencrypted");
         Assertions.assertThat(user.getPassword()).isEqualTo("thisisalsonotencrypted");
     }
 
     @Test
-    public void setFirstName() {
+    public void testSetFirstName() {
         user.setFirstName("Johnny");
         Assertions.assertThat(user.getFirstName()).isEqualTo("Johnny");
     }
 
     @Test
-    public void setLastName() {
+    public void testSetLastName() {
         user.setLastName("Roe");
         Assertions.assertThat(user.getLastName()).isEqualTo("Roe");
     }
 
     @Test
-    public void setAffiliation() {
+    public void testSetAffiliation() {
         user.setAffiliation("Eidgenössische Technische Hochschule Zürich");
         Assertions.assertThat(user.getAffiliation())
                 .isEqualTo("Eidgenössische Technische Hochschule Zürich");
     }
 
     @Test
-    public void setAccountNonExpired() {
+    public void testSetAccountNonExpired() {
         user.setAccountNonExpired(false);
         Assertions.assertThat(user.isAccountNonExpired()).isFalse();
     }
 
     @Test
-    public void setAccountNonLocked() {
+    public void testSetAccountNonLocked() {
         user.setAccountNonLocked(false);
         Assertions.assertThat(user.isAccountNonLocked()).isFalse();
     }
 
     @Test
-    public void setCredentialsNonExpired() {
+    public void testSetCredentialsNonExpired() {
         user.setCredentialsNonExpired(false);
         Assertions.assertThat(user.isCredentialsNonExpired()).isFalse();
     }
 
     @Test
-    public void setEnabled() {
+    public void testSetEnabled() {
         user.setEnabled(false);
         Assertions.assertThat(user.isEnabled()).isFalse();
     }
 
     @Test
-    public void getAuthorities() {
+    public void testSetAuthorities() {
         Collection<GrantedAuthority> authorities = Set.of(
                 new SimpleGrantedAuthority(UserRole.RESEARCHER.name())
         );
