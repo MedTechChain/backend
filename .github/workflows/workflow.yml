@@ -2,11 +2,13 @@ name: 'Run workflow'
 
 on:
   push:
+    branches: [main]
     paths:
       - 'src/**'
       - '.github/workflows/workflow.yml'
 
   pull_request:
+    branches: [main]
     paths:
       - 'src/**'
       - '.github/workflows/workflow.yml'
@@ -16,8 +18,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+        # Checkout the code
       - uses: actions/checkout@v4
 
+        # Ensure the gradle-wrapper.jar file is legitimate
+        # For explanations, see https://tomgregory.com/gradle/build-gradle-projects-with-github-actions/
+      - uses: gradle/wrapper-validation-action@v2
+
+        # Install Java 21
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

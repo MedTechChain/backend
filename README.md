@@ -1,6 +1,6 @@
 # MedTech Chain - Backend
 
-[![Run workflow](https://github.com/MedTechChain/backend/actions/workflows/workflow.yml/badge.svg)](https://github.com/MedTechChain/backend/actions/workflows/workflow.yml)
+[![Pipeline](https://github.com/MedTechChain/backend/actions/workflows/workflow.yml/badge.svg)](https://github.com/MedTechChain/backend/actions/workflows/workflow.yml)
 
 ## Description
 
