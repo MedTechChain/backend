@@ -142,7 +142,7 @@ public class AuthenticationService implements UserDetailsService {
      * @param lastName      the last name of the new user
      * @param affiliation   the affiliation of the new user
      */
-    public void registerNewUser(String email, String firstName,
+    public UserData registerNewUser(String email, String firstName,
                                 String lastName, String affiliation) {
         if (firstName == null || lastName == null) {
             throw new DataIntegrityViolationException("First and last name must be non-null");
@@ -171,6 +171,7 @@ public class AuthenticationService implements UserDetailsService {
                 + "Suggestion: you can also use a password manager.\n\n"
                 + "Best regards,\nMedTech Chain";
         this.emailService.sendSimpleEmail(email, "Welcome to MedTech Chain", emailContent);
+        return newUser;
     }
 
     /**
@@ -192,14 +193,14 @@ public class AuthenticationService implements UserDetailsService {
      * @param lastName      the last name of the user to be updated
      * @param affiliation   the affiliation of the user to be updated
      */
-    public void updateUser(UUID userId, String firstName, String lastName, String affiliation) {
+    public UserData updateUser(UUID userId, String firstName, String lastName, String affiliation) {
         UserData user = this.loadUserByUserId(userId);
 
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setAffiliation(affiliation);
 
-        this.userDataRepository.save(user);
+        return this.userDataRepository.save(user);
     }
 
     /**
@@ -208,11 +209,8 @@ public class AuthenticationService implements UserDetailsService {
      * @param userId        the userID of the user to be deleted
      */
     public void deleteUser(UUID userId) {
-        if (this.userDataRepository.findByUserId(userId).isEmpty()) {
-            throw new UsernameNotFoundException(
-                    String.format("User with userid %s not found", userId)
-            );
-        }
+        // Check if the user with the specified userId exists
+        loadUserByUserId(userId);
         this.userDataRepository.deleteByUserId(userId);
     }
 
