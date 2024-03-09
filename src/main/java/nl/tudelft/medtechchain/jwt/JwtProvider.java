@@ -14,7 +14,9 @@ import nl.tudelft.medtechchain.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 
 /**
@@ -87,6 +89,27 @@ public class JwtProvider {
             return Optional.empty();
         }
         return Optional.of(authenticationHeader.substring("Bearer ".length()));
+    }
+
+
+    /**
+     * Gets the JWT from the HTTP request, validates and parses it, and extracts the JWT claims.
+     * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
+     *
+     * @param request           the HTTP request with the JWT (aka the 'Bearer token')
+     * @return                  JWT claims with the user details (userID and role) and JWT details
+     */
+    public Jws<Claims> resolveJwtClaims(HttpServletRequest request) {
+        Optional<String> resolvedJwt = this.getJwtFromHeader(request);
+        if (resolvedJwt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT is missing");
+        }
+        String jwt = resolvedJwt.get();
+        Optional<Jws<Claims>> claims = this.validateAndParseClaims(jwt);
+        if (claims.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT invalid or expired");
+        }
+        return claims.get();
     }
 
     /**

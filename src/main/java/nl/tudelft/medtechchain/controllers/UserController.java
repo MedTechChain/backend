@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -103,25 +102,6 @@ public class UserController {
         return Pattern.compile(emailRegex).matcher(emailAddress).matches();
     }
 
-    /**
-     * Gets the JWT from the HTTP request, validates and parses it, and extracts the JWT claims.
-     * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
-     *
-     * @param request           the HTTP request with the JWT (aka the 'Bearer token')
-     * @return                  JWT claims with the user details (userID and role) and JWT details
-     */
-    private Jws<Claims> resolveJwtClaims(HttpServletRequest request) {
-        Optional<String> resolvedJwt = this.jwtProvider.getJwtFromHeader(request);
-        if (resolvedJwt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT is missing");
-        }
-        String jwt = resolvedJwt.get();
-        Optional<Jws<Claims>> claims = this.jwtProvider.validateAndParseClaims(jwt);
-        if (claims.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT invalid or expired");
-        }
-        return claims.get();
-    }
 
     /**
      * Creates and registers a new user based on the data specified in the JSON body of the request.
@@ -133,7 +113,7 @@ public class UserController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void registerNewUser(HttpServletRequest request) throws IOException {
-        Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
+        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
         }
@@ -165,7 +145,7 @@ public class UserController {
     @ResponseBody
     public void getAllResearchers(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
+        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
         }
@@ -195,7 +175,7 @@ public class UserController {
     @PutMapping("/update")
     @ResponseStatus(HttpStatus.OK)
     public void changePersonalDetails(HttpServletRequest request) throws IOException {
-        Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
+        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
         }
@@ -224,7 +204,7 @@ public class UserController {
     @DeleteMapping("/delete")
     @ResponseStatus(HttpStatus.OK)
     public void deleteUser(HttpServletRequest request) {
-        Jws<Claims> jwtClaims = this.resolveJwtClaims(request);
+        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
         if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
         }
