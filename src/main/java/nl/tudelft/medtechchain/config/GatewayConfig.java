@@ -60,10 +60,10 @@ public class GatewayConfig {
     public Gateway gateway(Environment env)
             throws IOException, InterruptedException, CertificateException, InvalidKeyException {
         Path cryptoPath = Paths.get(Objects.requireNonNull(env.getProperty("gateway.crypto-path")));
-        Path certDirPath = cryptoPath.resolve(Paths.get("gateway.cert-dir-path"));
-        Path keyDirPath = cryptoPath.resolve(Paths.get("gateway.key-dir-path"));
-        Path tlsCertPath = cryptoPath.resolve(Paths.get("gateway.tls-cert-path"));
-        String mspId = env.getProperty("gateway.msp-id:MedTechChain");
+        Path certDirPath = cryptoPath.resolve(Paths.get(Objects.requireNonNull(env.getProperty("gateway.cert-dir-path"))));
+        Path keyDirPath = cryptoPath.resolve(Paths.get(Objects.requireNonNull(env.getProperty("gateway.key-dir-path"))));
+        Path tlsCertPath = cryptoPath.resolve(Paths.get(Objects.requireNonNull(env.getProperty("gateway.tls-cert-path"))));
+        String mspId = env.getProperty("gateway.msp-id");
         String peerEndpoint = env.getProperty("gateway.peer-endpoint");
         String overrideAuth = env.getProperty("gateway.override-auth");
 

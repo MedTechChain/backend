@@ -14,7 +14,7 @@ import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
 import org.hyperledger.fabric.client.GatewayException;
 import org.hyperledger.fabric.client.Network;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,28 +41,23 @@ public class QueryController {
 
     private final Contract contract;
 
-    @Value("${gateway.channel-name}")
-    private String channelName;
-
-    @Value("${gateway.chaincode-name}")
-    private String chaincodeName;
-
-
     /**
      * Creates a new QueryController object, which is used for sending queries to the blockchain.
      *
+     * @param env               the Spring environment (to access the defined properties)
      * @param gateway           the Fabric Gateway
      * @param jwtProvider       the JWT provider object, used for parsing and validating JWTs
      * @param objectMapper      the ObjectMapper object, used to read/write JSON strings
      */
-    public QueryController(Gateway gateway, JwtProvider jwtProvider, ObjectMapper objectMapper) {
+    public QueryController(Environment env, Gateway gateway, JwtProvider jwtProvider,
+                           ObjectMapper objectMapper) {
         this.jwtProvider = jwtProvider;
         this.objectMapper = objectMapper;
 
         // Get a network instance representing the channel where the smart contract is deployed.
-        Network network = gateway.getNetwork(this.channelName);
+        Network network = gateway.getNetwork(env.getProperty("gateway.channel-name"));
         // Get the smart contract from the network.
-        this.contract = network.getContract(this.chaincodeName);
+        this.contract = network.getContract(env.getProperty("gateway.chaincode-name"));
     }
 
     /**
@@ -83,23 +78,18 @@ public class QueryController {
         }
 
         // TODO: create a more general API
-        // String query;
         String version;
         try {
-            // query = request.getParameter("query");    // CountFirmwareVersionGreaterEqualThan
             version = request.getParameter("version");  // e.g. v0.0.1
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
-        // JsonNode node = this.objectMapper.readTree(request.getInputStream());
-        // String field = node.get("version").asText();  // e.g. v0.0.1
 
         // Return all the current assets on the ledger.
-        this.getAllAssets(version);
+        String result = this.getAllAssets(version);
 
         // Query the chain
-        String responseBody = this.objectMapper.createObjectNode()
-                .put("result", 4).toString();
+        String responseBody = this.objectMapper.createObjectNode().put("result", result).toString();
         response.getWriter().write(responseBody);
         response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
     }
@@ -112,14 +102,16 @@ public class QueryController {
      * @throws GatewayException             if something goes wrong during transaction evaluation
      * @throws JsonProcessingException      if something goes wrong during JSON reading
      */
-    private void getAllAssets(String version) throws GatewayException, JsonProcessingException {
+    private String getAllAssets(String version) throws GatewayException, JsonProcessingException {
         System.out.println("\n--> Evaluate Transaction: CountFirmwareVersionGreaterEqualThan,"
                 + "function returns the number of devices with firmware version greater than or"
                 + "equal to the specified version");
 
-        var result = contract.evaluateTransaction("CountFirmwareVersionGreaterEqualThan", version);
+        byte[] resultInBytes = this.contract.evaluateTransaction("CountFirmwareVersionGreaterEqualThan", version);
+        String result = new String(resultInBytes, StandardCharsets.UTF_8);
 
         System.out.println("*** Result: " + prettyJson(result));
+        return result;
     }
 
     /**
