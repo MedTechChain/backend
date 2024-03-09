@@ -1,5 +1,7 @@
 # MedTech Chain - Backend
 
+[![Run workflow](https://github.com/MedTechChain/backend/actions/workflows/workflow.yml/badge.svg)](https://github.com/MedTechChain/backend/actions/workflows/workflow.yml)
+
 ## Description
 
 The backend part of MedTech Chain project. In particular, this repository contains the User Management Server,
