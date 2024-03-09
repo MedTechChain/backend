@@ -2,6 +2,8 @@ package nl.tudelft.medtechchain.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,10 +56,10 @@ public class QueryController {
         this.jwtProvider = jwtProvider;
         this.objectMapper = objectMapper;
 
-        // Get a network instance representing the channel where the smart contract is deployed.
+        // Get a network instance representing the channel where the smart contract is deployed
         Network network = gateway.getNetwork(env.getProperty("gateway.channel-name"));
-        // Get the smart contract from the network.
-        this.contract = network.getContract(env.getProperty("gateway.chaincode-name"));
+        // Get the smart contract from the network
+        this.contract = network.getContract(env.getProperty("gateway.chaincode-name"), env.getProperty("gateway.smart-contract-name"));
     }
 
     /**
@@ -109,8 +111,8 @@ public class QueryController {
 
         byte[] resultInBytes = this.contract.evaluateTransaction("CountFirmwareVersionGreaterEqualThan", version);
         String result = new String(resultInBytes, StandardCharsets.UTF_8);
-
         System.out.println("*** Result: " + prettyJson(result));
+
         return result;
     }
 

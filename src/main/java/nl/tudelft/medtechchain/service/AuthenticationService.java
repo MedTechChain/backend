@@ -213,22 +213,4 @@ public class AuthenticationService implements UserDetailsService {
         loadUserByUserId(userId);
         this.userDataRepository.deleteByUserId(userId);
     }
-
-    /**
-     * Changes the password of the user with the given username.
-     * The provided old (current) password is compared to the stored old (current) password.
-     * TODO: implement the endpoint in the controller
-     *
-     * @param username      the username of the user whose password will be changed
-     * @param oldPassword   the old (current) password of the specified user
-     * @param newPassword   the new password for the specified user
-     */
-    public void changePassword(String username, String oldPassword, String newPassword) {
-        UserData user = this.loadUserByUsername(username);
-        if (!this.passwordEncoder.encode(oldPassword).equals(user.getPassword())) {
-            throw new BadCredentialsException("Provided old password does not match the actual");
-        }
-        user.setPassword(passwordEncoder.encode(newPassword));
-        this.userDataRepository.save(user);
-    }
 }

@@ -147,7 +147,7 @@ public class AuthenticationServiceTest {
                 new Researcher(userId2, firstName, lastName, email2, affiliation),
                 new Researcher(userId3, firstName, lastName, email3, affiliation)
         );
-        Assertions.assertThatCollection(this.userDataRepository.findAllResearchers())
+        Assertions.assertThatCollection(this.authenticationService.getAllResearchers())
                 .hasSameElementsAs(expectedResearcherList);
     }
 
@@ -199,5 +199,38 @@ public class AuthenticationServiceTest {
         this.authenticationService.deleteUser(userId);
         Assertions.assertThatThrownBy(() -> this.authenticationService.loadUserByUserId(userId))
                 .isInstanceOf(UsernameNotFoundException.class);
+    }
+
+
+    @Test
+    public void testEqualsTrue() {
+        UserData user = this.authenticationService
+                .registerNewUser("J.Doe@tudelft.nl", "John", "Doe", "TU Delft");
+        Assertions.assertThat(user).isEqualTo(user);
+    }
+
+    @Test
+    public void testEqualsFalse() {
+        UserData user1 = this.authenticationService
+                .registerNewUser("J.Doe@tudelft.nl", "John", "Doe", "TU Delft");
+        UserData user2 = this.authenticationService
+                .registerNewUser("J.Doe-1@tudelft.nl", "John", "Doe", "TU Delft");
+        Assertions.assertThat(user1).isNotEqualTo(user2);
+    }
+
+    @Test
+    public void testHashCodeEquals() {
+        UserData user = this.authenticationService
+                .registerNewUser("J.Doe@tudelft.nl", "John", "Doe", "TU Delft");
+        Assertions.assertThat(user.hashCode()).isEqualTo(user.hashCode());
+    }
+
+    @Test
+    public void testHashCodeNotEquals() {
+        UserData user1 = this.authenticationService
+                .registerNewUser("J.Doe@tudelft.nl", "John", "Doe", "TU Delft");
+        UserData user2 = this.authenticationService
+                .registerNewUser("J.Doe-1@tudelft.nl", "John", "Doe", "TU Delft");
+        Assertions.assertThat(user1.hashCode()).isNotEqualTo(user2.hashCode());
     }
 }

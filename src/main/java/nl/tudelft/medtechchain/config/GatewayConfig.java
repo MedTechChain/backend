@@ -76,11 +76,9 @@ public class GatewayConfig {
                 .signer(newSigner(keyDirPath))
                 .connection(channel)
                 .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS));
-        try {
-            return builder.connect();
-        } finally {
-            channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-        }
+        // TODO: add hook
+        // channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+        return builder.connect();
     }
 
     /**
