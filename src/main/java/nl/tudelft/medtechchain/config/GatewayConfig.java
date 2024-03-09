@@ -1,23 +1,31 @@
 package nl.tudelft.medtechchain.config;
 
+import io.grpc.ChannelCredentials;
 import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
 import io.grpc.TlsChannelCredentials;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
+import java.security.PrivateKey;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.hyperledger.fabric.client.Gateway;
 import org.hyperledger.fabric.client.identity.Identities;
 import org.hyperledger.fabric.client.identity.Identity;
 import org.hyperledger.fabric.client.identity.Signer;
 import org.hyperledger.fabric.client.identity.Signers;
 import org.hyperledger.fabric.client.identity.X509Identity;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 
 /**
@@ -28,32 +36,16 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class GatewayConfig {
-    private static final String MSP_ID =
-            System.getenv().getOrDefault("MSP_ID", "Org1MSP");
-
-    // Path to crypto materials.
-    private static final Path CRYPTO_PATH =
-            Paths.get("../../test-network/organizations/peerOrganizations/org1.example.com");
-
-    // Path to user certificate.
-    private static final Path CERT_DIR_PATH =
-            CRYPTO_PATH.resolve(Paths.get("users/User1@org1.example.com/msp/signcerts"));
-
-    // Path to user private key directory.
-    private static final Path KEY_DIR_PATH =
-            CRYPTO_PATH.resolve(Paths.get("users/User1@org1.example.com/msp/keystore"));
-
-    // Path to peer tls certificate.
-    private static final Path TLS_CERT_PATH =
-            CRYPTO_PATH.resolve(Paths.get("peers/peer0.org1.example.com/tls/ca.crt"));
-
-    // Gateway peer end point.
-    private static final String PEER_ENDPOINT = "localhost:7051";
-    private static final String OVERRIDE_AUTH = "peer0.org1.example.com";
-
     /**
-     * Creates the Fabric Gateway bean for the blockchain, based on the specified configuration.
+     * Creates a Gateway connection to access any of the Networks (analogous to channels) accessible
+     *   to the Fabric Gateway, and subsequently smart Contracts deployed to those networks.
+     * A Gateway connection has three requirements:
+     *    1. A gRPC connection to the Fabric Gateway
+     *    2. Client identity used to transact with the network
+     *    3. Signing implementation used to generate digital signatures for the client identity
+     * See <a href="https://hyperledger-fabric.readthedocs.io/en/latest/write_first_app.html">Running a Fabric Application</a>.
      *
+     * @param env                       the Spring environment (to access the defined properties)
      * @return                          the created Gateway bean, based on the configuration
      * @throws IOException              if something goes wrong during the creation of the gateway,
      *                                   (methods `newGrpcConnection`, `newIdentity`, `newSigner`)
@@ -64,22 +56,26 @@ public class GatewayConfig {
      *                                    (generating digital signatures for the client identity)
      */
     @Bean
-    public Gateway gateway() throws IOException, InterruptedException,
-            CertificateException, InvalidKeyException {
+    @ConditionalOnProperty(name = "gateway.mock", havingValue = "false")
+    public Gateway gateway(Environment env)
+            throws IOException, InterruptedException, CertificateException, InvalidKeyException {
+        Path cryptoPath = Paths.get(Objects.requireNonNull(env.getProperty("gateway.crypto-path")));
+        Path certDirPath = cryptoPath.resolve(Paths.get("gateway.cert-dir-path"));
+        Path keyDirPath = cryptoPath.resolve(Paths.get("gateway.key-dir-path"));
+        Path tlsCertPath = cryptoPath.resolve(Paths.get("gateway.tls-cert-path"));
+        String mspId = env.getProperty("gateway.msp-id:MedTechChain");
+        String peerEndpoint = env.getProperty("gateway.peer-endpoint");
+        String overrideAuth = env.getProperty("gateway.override-auth");
+
         // The gRPC client connection should be shared by all Gateway connections to this endpoint
-        var channel = newGrpcConnection();
+        var channel = newGrpcConnection(tlsCertPath, peerEndpoint, overrideAuth);
 
         var builder = Gateway
-                .newInstance()            // Create new Gateway
-                .identity(newIdentity())  // Client identity is used to transact with the network
-                .signer(newSigner())      // Generating digital signatures for the client identity
+                .newInstance()
+                .identity(newIdentity(certDirPath, mspId))
+                .signer(newSigner(keyDirPath))
                 .connection(channel)
-                // Default timeouts for different gRPC calls
-                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
-                .endorseOptions(options -> options.withDeadlineAfter(15, TimeUnit.SECONDS))
-                .submitOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
-                .commitStatusOptions(options -> options.withDeadlineAfter(1, TimeUnit.MINUTES));
-
+                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS));
         try {
             return builder.connect();
         } finally {
@@ -88,58 +84,71 @@ public class GatewayConfig {
     }
 
     /**
-     * Creates a new gRPC connection to the Fabric Gateway.
+     * Creates a gRPC connection using the TLS certificate of the signing certificate authority,
+     *   so that the authenticity of the gateway's TLS certificate can be verified.
+     * For a TLS connection to be successfully established, the endpoint address used by the client
+     *   must match the address in the gateway's TLS certificate.
+     * See <a href="https://hyperledger-fabric.readthedocs.io/en/latest/write_first_app.html">Running a Fabric Application</a>.
      *
+     * @param tlsCertPath               the path to the peer tls certificate
+     * @param peerEndpoint              the address of the peer endpoint (e.g. localhost:7051)
+     * @param overrideAuth              force this endpoint address to be interpreted as the
+     *                                    gateway's configured hostname
      * @return                          the created new gRPC connection
      * @throws IOException              if something goes wrong during the creation
      *                                    of TLS channel credentials
      */
-    private static ManagedChannel newGrpcConnection() throws IOException {
-        var credentials = TlsChannelCredentials.newBuilder()
-                .trustManager(TLS_CERT_PATH.toFile())
+    private ManagedChannel newGrpcConnection(Path tlsCertPath, String peerEndpoint,
+                                             String overrideAuth) throws IOException {
+        ChannelCredentials tlsCredentials = TlsChannelCredentials.newBuilder()
+                .trustManager(tlsCertPath.toFile())
                 .build();
-        return Grpc.newChannelBuilder(PEER_ENDPOINT, credentials)
-                .overrideAuthority(OVERRIDE_AUTH)
+        return Grpc.newChannelBuilder(peerEndpoint, tlsCredentials)
+                .overrideAuthority(overrideAuth)
                 .build();
     }
 
     /**
      * Creates a new client identity, which is used to transact with the network.
      *
+     * @param certDirPath               the path to the user certificate
+     * @param mspId                     ID of the Membership Service Provider
      * @return                          the created client identity
      * @throws IOException              if something goes wrong during certificate reading
      * @throws CertificateException     if something goes wrong during certificate reading
      */
-    private static Identity newIdentity() throws IOException, CertificateException {
-        try (var certReader = Files.newBufferedReader(getFirstFilePath(CERT_DIR_PATH))) {
-            var certificate = Identities.readX509Certificate(certReader);
-            return new X509Identity(MSP_ID, certificate);
+    private Identity newIdentity(Path certDirPath, String mspId)
+            throws IOException, CertificateException {
+        try (BufferedReader reader = Files.newBufferedReader(this.getFirstFile(certDirPath))) {
+            X509Certificate certificate = Identities.readX509Certificate(reader);
+            return new X509Identity(mspId, certificate);
         }
     }
 
     /**
      * Creates a new signer, which is used to generate digital signatures for the client identity.
      *
+     * @param keyDirPath                the path to the user private key directory
      * @return                          the created signer
      * @throws IOException              if something goes wrong during private key reading
      * @throws InvalidKeyException      if something goes wrong during private key reading
      */
-    private static Signer newSigner() throws IOException, InvalidKeyException {
-        try (var keyReader = Files.newBufferedReader(getFirstFilePath(KEY_DIR_PATH))) {
-            var privateKey = Identities.readPrivateKey(keyReader);
+    private Signer newSigner(Path keyDirPath) throws IOException, InvalidKeyException {
+        try (BufferedReader reader = Files.newBufferedReader(this.getFirstFile(keyDirPath))) {
+            PrivateKey privateKey = Identities.readPrivateKey(reader);
             return Signers.newPrivateKeySigner(privateKey);
         }
     }
 
     /**
-     * Gets the path of the first file.
+     * Gets the path of the first file in the specified directory.
      *
      * @param dirPath           the directory path to files
      * @return                  the path to the first file
      * @throws IOException      if an I/O error occurs when opening the file
      */
-    private static Path getFirstFilePath(Path dirPath) throws IOException {
-        try (var keyFiles = Files.list(dirPath)) {
+    private Path getFirstFile(Path dirPath) throws IOException {
+        try (Stream<Path> keyFiles = Files.list(dirPath)) {
             return keyFiles.findFirst().orElseThrow();
         }
     }

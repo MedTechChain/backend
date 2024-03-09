@@ -13,6 +13,8 @@ import nl.tudelft.medtechchain.model.UserRole;
 import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
 import org.hyperledger.fabric.client.GatewayException;
+import org.hyperledger.fabric.client.Network;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,19 +35,18 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/queries")
 public class QueryController {
 
-    private final Gateway gateway;
-
     private final JwtProvider jwtProvider;
 
     private final ObjectMapper objectMapper;
 
     private final Contract contract;
 
-    private static final String CHANNEL_NAME =
-            System.getenv().getOrDefault("CHANNEL_NAME", "mychannel");
+    @Value("${gateway.channel-name}")
+    private String channelName;
 
-    private static final String CHAINCODE_NAME =
-            System.getenv().getOrDefault("CHAINCODE_NAME", "basic");
+    @Value("${gateway.chaincode-name}")
+    private String chaincodeName;
+
 
     /**
      * Creates a new QueryController object, which is used for sending queries to the blockchain.
@@ -55,15 +56,13 @@ public class QueryController {
      * @param objectMapper      the ObjectMapper object, used to read/write JSON strings
      */
     public QueryController(Gateway gateway, JwtProvider jwtProvider, ObjectMapper objectMapper) {
-        this.gateway = gateway;
         this.jwtProvider = jwtProvider;
         this.objectMapper = objectMapper;
 
         // Get a network instance representing the channel where the smart contract is deployed.
-        var network = this.gateway.getNetwork(CHANNEL_NAME);
-
+        Network network = gateway.getNetwork(this.channelName);
         // Get the smart contract from the network.
-        this.contract = network.getContract(CHAINCODE_NAME);
+        this.contract = network.getContract(this.chaincodeName);
     }
 
     /**
@@ -84,20 +83,19 @@ public class QueryController {
         }
 
         // TODO: create a more general API
-        String query;
-        String field;
+        // String query;
+        String version;
         try {
             // query = request.getParameter("query");    // CountFirmwareVersionGreaterEqualThan
-            field = request.getParameter("version");  // e.g. v0.0.1
+            version = request.getParameter("version");  // e.g. v0.0.1
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-
         }
-        // JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
-        // String field = jsonNode.get("version").asText();  // e.g. v0.0.1
+        // JsonNode node = this.objectMapper.readTree(request.getInputStream());
+        // String field = node.get("version").asText();  // e.g. v0.0.1
 
         // Return all the current assets on the ledger.
-        this.getAllAssets();
+        this.getAllAssets(version);
 
         // Query the chain
         String responseBody = this.objectMapper.createObjectNode()
@@ -114,12 +112,12 @@ public class QueryController {
      * @throws GatewayException             if something goes wrong during transaction evaluation
      * @throws JsonProcessingException      if something goes wrong during JSON reading
      */
-    private void getAllAssets() throws GatewayException, JsonProcessingException {
+    private void getAllAssets(String version) throws GatewayException, JsonProcessingException {
         System.out.println("\n--> Evaluate Transaction: CountFirmwareVersionGreaterEqualThan,"
                 + "function returns the number of devices with firmware version greater than or"
                 + "equal to the specified version");
 
-        var result = contract.evaluateTransaction("CountFirmwareVersionGreaterEqualThan", "v0.0.1");
+        var result = contract.evaluateTransaction("CountFirmwareVersionGreaterEqualThan", version);
 
         System.out.println("*** Result: " + prettyJson(result));
     }
