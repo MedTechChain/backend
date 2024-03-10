@@ -36,6 +36,7 @@ import org.springframework.core.env.Environment;
  */
 @Configuration
 public class GatewayConfig {
+
     /**
      * Creates a Gateway connection to access any of the Networks (analogous to channels) accessible
      *   to the Fabric Gateway, and subsequently smart Contracts deployed to those networks.
@@ -49,7 +50,6 @@ public class GatewayConfig {
      * @return                          the created Gateway bean, based on the configuration
      * @throws IOException              if something goes wrong during the creation of the gateway,
      *                                   (methods `newGrpcConnection`, `newIdentity`, `newSigner`)
-     * @throws InterruptedException     if something goes wrong during the channel shutdown
      * @throws CertificateException     if something goes wrong during identity creation
      *                                    (client identity is used to transact with the network)
      * @throws InvalidKeyException      if something goes wrong during the signing process
@@ -58,27 +58,30 @@ public class GatewayConfig {
     @Bean
     @ConditionalOnProperty(name = "gateway.mock", havingValue = "false")
     public Gateway gateway(Environment env)
-            throws IOException, InterruptedException, CertificateException, InvalidKeyException {
-        Path cryptoPath = Paths.get(Objects.requireNonNull(env.getProperty("gateway.crypto-path")));
-        Path certDirPath = cryptoPath.resolve(Paths.get(Objects.requireNonNull(env.getProperty("gateway.cert-dir-path"))));
-        Path keyDirPath = cryptoPath.resolve(Paths.get(Objects.requireNonNull(env.getProperty("gateway.key-dir-path"))));
-        Path tlsCertPath = cryptoPath.resolve(Paths.get(Objects.requireNonNull(env.getProperty("gateway.tls-cert-path"))));
+            throws IOException, CertificateException, InvalidKeyException {
+        // Read environment properties
+        Path cryptoPath = Paths.get(Objects
+                .requireNonNull(env.getProperty("gateway.crypto-path")));
+        Path certDirPath = cryptoPath.resolve(Paths.get(Objects
+                .requireNonNull(env.getProperty("gateway.cert-dir-path"))));
+        Path keyDirPath = cryptoPath.resolve(Paths.get(Objects
+                .requireNonNull(env.getProperty("gateway.key-dir-path"))));
+        Path tlsCertPath = cryptoPath.resolve(Paths.get(Objects
+                .requireNonNull(env.getProperty("gateway.tls-cert-path"))));
         String mspId = env.getProperty("gateway.msp-id");
         String peerEndpoint = env.getProperty("gateway.peer-endpoint");
         String overrideAuth = env.getProperty("gateway.override-auth");
 
         // The gRPC client connection should be shared by all Gateway connections to this endpoint
-        var channel = newGrpcConnection(tlsCertPath, peerEndpoint, overrideAuth);
+        ManagedChannel channel = newGrpcConnection(tlsCertPath, peerEndpoint, overrideAuth);
 
-        var builder = Gateway
+        return Gateway
                 .newInstance()
                 .identity(newIdentity(certDirPath, mspId))
                 .signer(newSigner(keyDirPath))
                 .connection(channel)
-                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS));
-        // TODO: add hook
-        // channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-        return builder.connect();
+                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
+                .connect();
     }
 
     /**

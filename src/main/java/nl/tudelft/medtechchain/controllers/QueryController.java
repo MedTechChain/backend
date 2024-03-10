@@ -2,10 +2,9 @@ package nl.tudelft.medtechchain.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -41,6 +40,8 @@ public class QueryController {
 
     private final ObjectMapper objectMapper;
 
+    private final Gateway gateway;
+
     private final Contract contract;
 
     /**
@@ -51,15 +52,28 @@ public class QueryController {
      * @param jwtProvider       the JWT provider object, used for parsing and validating JWTs
      * @param objectMapper      the ObjectMapper object, used to read/write JSON strings
      */
-    public QueryController(Environment env, Gateway gateway, JwtProvider jwtProvider,
-                           ObjectMapper objectMapper) {
+    public QueryController(Environment env, Gateway gateway,
+                           JwtProvider jwtProvider, ObjectMapper objectMapper) {
+        this.gateway = gateway;
         this.jwtProvider = jwtProvider;
         this.objectMapper = objectMapper;
+
 
         // Get a network instance representing the channel where the smart contract is deployed
         Network network = gateway.getNetwork(env.getProperty("gateway.channel-name"));
         // Get the smart contract from the network
-        this.contract = network.getContract(env.getProperty("gateway.chaincode-name"), env.getProperty("gateway.smart-contract-name"));
+        this.contract = network.getContract(env.getProperty("gateway.chaincode-name"),
+                env.getProperty("gateway.smart-contract-name"));
+    }
+
+    /**
+     *  Closes the gateway before the controller is destroyed.
+     */
+    @PreDestroy
+    public void destroy() {
+        System.out.println("Running a pre-destroy hook to close the gateway...");
+        this.gateway.close();
+        System.out.println("Successfully closed the gateway");
     }
 
     /**
@@ -109,22 +123,12 @@ public class QueryController {
                 + "function returns the number of devices with firmware version greater than or"
                 + "equal to the specified version");
 
-        byte[] resultInBytes = this.contract.evaluateTransaction("CountFirmwareVersionGreaterEqualThan", version);
+        byte[] resultInBytes = this.contract
+                .evaluateTransaction("CountFirmwareVersionGreaterEqualThan", version);
         String result = new String(resultInBytes, StandardCharsets.UTF_8);
         System.out.println("*** Result: " + prettyJson(result));
 
         return result;
-    }
-
-    /**
-     * A helper method used to print a JSON byte array in the pretty format.
-     *
-     * @param json                          the byte array with JSON that has to be pretty-printed
-     * @return                              the pretty-printed JSON string
-     * @throws JsonProcessingException      if something goes wrong during JSON reading
-     */
-    private String prettyJson(final byte[] json) throws JsonProcessingException {
-        return this.prettyJson(new String(json, StandardCharsets.UTF_8));
     }
 
     /**

@@ -95,18 +95,18 @@ jacocoTestCoverageVerification() {
 	}
 }
 
-tasks.register("codeCoverageReport", JacocoReport) {
+jacocoTestReport {
 	// (https://docs.gradle.org/current/userguide/jacoco_plugin.html)
-	// Task derived from an official gradle example. Responsible for aggregating the code coverage reports.
+	// Responsible for aggregating the code coverage reports
 	dependsOn {
 		test
 		jacocoTestCoverageVerification
 	}
 
-	// Output html (used to extract coverage percentage)
+	// Output html and csv (used to extract coverage percentage)
 	reports {
 		xml.required = false
-		csv.required = false
+		csv.required = true
 		html.required = true
 	}
 }
