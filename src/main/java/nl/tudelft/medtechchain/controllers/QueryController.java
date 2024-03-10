@@ -2,15 +2,11 @@ package nl.tudelft.medtechchain.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import nl.tudelft.medtechchain.jwt.JwtProvider;
-import nl.tudelft.medtechchain.model.UserRole;
 import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
 import org.hyperledger.fabric.client.GatewayException;
@@ -18,6 +14,7 @@ import org.hyperledger.fabric.client.Network;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -36,8 +33,6 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/queries")
 public class QueryController {
 
-    private final JwtProvider jwtProvider;
-
     private final ObjectMapper objectMapper;
 
     private final Gateway gateway;
@@ -49,13 +44,10 @@ public class QueryController {
      *
      * @param env               the Spring environment (to access the defined properties)
      * @param gateway           the Fabric Gateway
-     * @param jwtProvider       the JWT provider object, used for parsing and validating JWTs
      * @param objectMapper      the ObjectMapper object, used to read/write JSON strings
      */
-    public QueryController(Environment env, Gateway gateway,
-                           JwtProvider jwtProvider, ObjectMapper objectMapper) {
+    public QueryController(Environment env, Gateway gateway, ObjectMapper objectMapper) {
         this.gateway = gateway;
-        this.jwtProvider = jwtProvider;
         this.objectMapper = objectMapper;
 
 
@@ -89,20 +81,18 @@ public class QueryController {
     public void queryChain(HttpServletRequest request,
                            HttpServletResponse response) throws IOException, GatewayException {
         // TODO: create a more general API
-        String version;
-        try {
-            version = request.getParameter("version");  // e.g. v0.0.1
-        } catch (Exception e) {
+        String version = request.getParameter("version");  // e.g. v0.0.1
+        if (version == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         // Return all the current assets on the ledger.
-        String result = this.getAllAssets(version);
+        int result = Integer.parseInt(this.getAllAssets(version));
 
         // Query the chain
-        String responseBody = this.objectMapper.createObjectNode().put("result", result).toString();
+        String responseBody = this.objectMapper.createObjectNode().put("count", result).toString();
+        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(responseBody);
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
     }
 
     /**

@@ -1,6 +1,11 @@
 package nl.tudelft.medtechchain;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
+
 import io.grpc.CallOptions;
+import java.nio.charset.StandardCharsets;
 import java.util.function.UnaryOperator;
 import org.hyperledger.fabric.client.BlockAndPrivateDataEventsRequest;
 import org.hyperledger.fabric.client.BlockEventsRequest;
@@ -10,6 +15,7 @@ import org.hyperledger.fabric.client.CloseableIterator;
 import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.FilteredBlockEventsRequest;
 import org.hyperledger.fabric.client.Gateway;
+import org.hyperledger.fabric.client.GatewayException;
 import org.hyperledger.fabric.client.Network;
 import org.hyperledger.fabric.protos.common.Block;
 import org.hyperledger.fabric.protos.peer.BlockAndPrivateData;
@@ -43,20 +49,28 @@ public class TestConfig {
     @ConditionalOnProperty(name = "gateway.mock", havingValue = "true")
     public Gateway getGateway() {
         Gateway gatewayMock = Mockito.mock(Gateway.class);
-        Mockito.when(gatewayMock.getNetwork(Mockito.any())).thenReturn(new Network() {
+        Mockito.when(gatewayMock.getNetwork(any())).thenReturn(new Network() {
             @Override
             public Contract getContract(String s) {
-                return null;
+                return this.getContract(s, "");
             }
 
             @Override
             public Contract getContract(String s, String s1) {
-                return null;
+                Contract contractMock = Mockito.mock(Contract.class);
+                try {
+                    Mockito.when(contractMock
+                                    .evaluateTransaction(anyString(), nullable(String.class)))
+                            .thenReturn("5".getBytes(StandardCharsets.UTF_8));
+                } catch (GatewayException e) {
+                    return contractMock;
+                }
+                return contractMock;
             }
 
             @Override
             public String getName() {
-                return null;
+                return "GatewayMock";
             }
 
             @Override
