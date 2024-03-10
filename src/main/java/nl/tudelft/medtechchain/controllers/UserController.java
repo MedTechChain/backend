@@ -2,8 +2,8 @@ package nl.tudelft.medtechchain.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -15,14 +15,16 @@ import lombok.RequiredArgsConstructor;
 import nl.tudelft.medtechchain.jwt.JwtProvider;
 import nl.tudelft.medtechchain.model.Researcher;
 import nl.tudelft.medtechchain.model.UserData;
-import nl.tudelft.medtechchain.model.UserRole;
 import nl.tudelft.medtechchain.service.AuthenticationService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -48,13 +50,6 @@ public class UserController {
 
     private final ObjectMapper objectMapper;
 
-    /**
-     * Test endpoint. TODO: remove
-     */
-    @GetMapping
-    public ResponseEntity<String> greetings() {
-        return ResponseEntity.ok("Salut, Alin!");
-    }
 
     /**
      * Logs in the user. If successful, sends back a JSON with JWT.
@@ -77,31 +72,16 @@ public class UserController {
         );
 
         UserData user = this.authenticationService.loadUserByUsername(username);
-        String jwt = this.jwtProvider.generateJwtToken(
-                user.getUserId(), user.getRole(), new Date()
-        );
+        String jwt = this.jwtProvider
+                .generateJwtToken(user.getUserId(), user.getRole(), new Date());
 
         String responseBody = this.objectMapper.createObjectNode()
                 .put("jwt", jwt)
                 .put("token_type", "JWT")
                 .put("expires_in", this.jwtProvider.getJwtExpirationTime()).toString();
+        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
         response.getWriter().write(responseBody);
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
     }
-
-    /**
-     * Checks whether the provided email address is valid (i.e. matches the regex).
-     * The regex is taken from <a href="https://www.baeldung.com/java-email-validation-regexn">Baeldung</a>.
-     *
-     * @param emailAddress      the email address to validate
-     * @return                  true if the provided email address is valid, false otherwise
-     */
-    private boolean isEmailValid(String emailAddress) {
-        String emailRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
-                + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-        return Pattern.compile(emailRegex).matcher(emailAddress).matches();
-    }
-
 
     /**
      * Creates and registers a new user based on the data specified in the JSON body of the request.
@@ -113,16 +93,8 @@ public class UserController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void registerNewUser(HttpServletRequest request) throws IOException {
-        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
-        if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
-        }
-
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
         String email = jsonNode.get("email").asText();
-        if (!isEmailValid(email)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email address is not valid");
-        }
         String firstName  = jsonNode.get("first_name").asText();
         String lastName = jsonNode.get("last_name").asText();
         String affiliation = jsonNode.get("affiliation").asText();
@@ -133,7 +105,8 @@ public class UserController {
     /**
      * Retrieves all researchers that are stored in the database.
      * For each researcher, their userID, first name, last name, email and affiliation are returned.
-     * Only admin is allowed to perform this operation, which will be checked using the JWT.
+     * Only admin is allowed to perform this operation, which will be checked with the JWT
+     *  (Spring Security performs the actual authorization check in AuthorizationFilter).
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
      * @param request           the HTTP request with the JWT and the data about the new user
@@ -145,19 +118,12 @@ public class UserController {
     @ResponseBody
     public void getAllResearchers(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
-        if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
-        }
-
         List<Researcher> researchers = this.authenticationService.getAllResearchers();
         String responseBody = this.objectMapper
                 .writerWithDefaultPrettyPrinter().writeValueAsString(researchers);
+        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
         response.getWriter().write(responseBody);
     }
-
-    // @GetMapping("researchers")
-    // public void getFilteredResearchers() {}
 
     /**
      * Updates the personal details of the user with the given userID,
@@ -166,7 +132,8 @@ public class UserController {
      *  which should be passed in a JSON body (first_name, last_name and affiliation).
      * In case only one of the fields is to be updated, all three have to be specified,
      *  with the same (old) values for the fields that remain the same.
-     * Only admin is allowed to perform this operation, which will be checked using the JWT.
+     * Only admin is allowed to perform this operation, which will be checked using the JWT
+     *  (Spring Security performs the actual authorization check in AuthorizationFilter).
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
      * @param request           the HTTP request with the JWT and the data about the user
@@ -175,11 +142,6 @@ public class UserController {
     @PutMapping("/update")
     @ResponseStatus(HttpStatus.OK)
     public void changePersonalDetails(HttpServletRequest request) throws IOException {
-        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
-        if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
-        }
-
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
         String firstName = jsonNode.get("first_name").asText();
         String lastName = jsonNode.get("last_name").asText();
@@ -196,7 +158,8 @@ public class UserController {
 
     /**
      * Deletes the user with the given userID, which should be passed as a query parameter user_id.
-     * Only admin is allowed to perform this operation, which will be checked using the JWT.
+     * Only admin is allowed to perform this operation, which will be checked using the JWT
+     *  (Spring Security performs the actual authorization check in AuthorizationFilter).
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
      * @param request           the HTTP request with the JWT and the userID of the user
@@ -204,11 +167,6 @@ public class UserController {
     @DeleteMapping("/delete")
     @ResponseStatus(HttpStatus.OK)
     public void deleteUser(HttpServletRequest request) {
-        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
-        if (this.jwtProvider.getRole(jwtClaims) != UserRole.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
-        }
-
         UUID userId;
         try {
             userId = UUID.fromString(request.getParameter("user_id"));
@@ -219,6 +177,36 @@ public class UserController {
         this.authenticationService.deleteUser(userId);
     }
 
-    // @PutMapping("/change_password")
-    // public void changePassword(HttpServletRequest request, HttpServletResponse response) {}
+    /**
+     * Sends a custom exception when data constraints have been violated (e.g. unique, null etc.).
+     *
+     * @param e                 the thrown DataIntegrityViolationException
+     * @return                  HTTP response with the status 400 Bad Request and the error message
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    private ResponseEntity<Object> dataIntegrityViolation(DataIntegrityViolationException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    /**
+     * Sends a custom exception when the specified user already exists (e.g. during registration).
+     *
+     * @param e                 the thrown EntityExistsException
+     * @return                  HTTP response with the status 409 Conflict and the error message
+     */
+    @ExceptionHandler(EntityExistsException.class)
+    private ResponseEntity<Object> entityExists(EntityExistsException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    }
+
+    /**
+     * Sends a custom exception when the specified user has not been found (e.g. when updating).
+     *
+     * @param e                 the thrown EntityNotFoundException
+     * @return                  HTTP response with the status 404 Not Found and the error message
+     */
+    @ExceptionHandler(EntityNotFoundException.class)
+    private ResponseEntity<Object> entityNotFound(EntityNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
 }

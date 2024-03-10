@@ -72,7 +72,7 @@ public class JwtProvider {
      * @param claims                    the claims of JWT (containing some data)
      * @return                          true if the token is expired, false if it is not expired
      */
-    private boolean isExpired(Jws<Claims> claims) {
+    public boolean isExpired(Jws<Claims> claims) {
         return claims.getPayload().getExpiration().before(new Date());
     }
 

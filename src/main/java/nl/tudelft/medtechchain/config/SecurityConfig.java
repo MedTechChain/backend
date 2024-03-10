@@ -57,14 +57,18 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        // For all endpoints except /api/users/login, 401 will be returned
+                        //   if JWT token is missing (see JwtAuthenticationProvider for details)
                         .requestMatchers(HttpMethod.POST, "/api/users/login")
                             .permitAll()
-                        .requestMatchers(HttpMethod.POST, "api/users/register")
-                            .hasAnyAuthority(UserRole.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST, "/api/users/register")
+                            .hasAuthority(UserRole.ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/api/users/researchers")
-                            .hasAnyAuthority(UserRole.ADMIN.name())
+                            .hasAuthority(UserRole.ADMIN.name())
+                        .requestMatchers(HttpMethod.PUT, "/api/users/update")
+                            .hasAuthority(UserRole.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "/api/users/delete")
-                            .hasAnyAuthority(UserRole.ADMIN.name())
+                            .hasAuthority(UserRole.ADMIN.name())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -75,9 +79,6 @@ public class SecurityConfig {
                         new JwtAuthenticationFilter(this.authenticationService, this.jwtProvider),
                         UsernamePasswordAuthenticationFilter.class
                 )
-                //.formLogin(form -> form  // TODO: fix this + fix JavaDoc
-                //       .loginPage("/api/users/login")
-                //        .permitAll())
                 .build();
     }
 

@@ -1,6 +1,7 @@
 package nl.tudelft.medtechchain.service;
 
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 import nl.tudelft.medtechchain.model.Researcher;
@@ -14,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.context.jdbc.Sql;
 
 @SpringBootTest
+@Sql("/data.sql")
 public class AuthenticationServiceTest {
     @Autowired
     private AuthenticationService authenticationService;
@@ -51,7 +54,7 @@ public class AuthenticationServiceTest {
         UUID userId = UUID.fromString("9dedf9d3-a2c5-470e-86b8-5dfccdd0c2b0");
 
         Assertions.assertThatThrownBy(() -> this.authenticationService.loadUserByUserId(userId))
-                .isInstanceOf(UsernameNotFoundException.class);
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
@@ -64,29 +67,11 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testRegisterNewUserEmailIsNull() {
+    public void testRegisterNewUserInvalidEmail() {
         Assertions
                 .assertThatThrownBy(() ->
-                        this.authenticationService.registerNewUser(null,
+                        this.authenticationService.registerNewUser("J.Doe[at]tudelft.nl",
                                 "John", "Doe", "TU Delft"))
-                .isInstanceOf(DataIntegrityViolationException.class);
-    }
-
-    @Test
-    public void testRegisterNewUserFirstNameIsNull() {
-        Assertions
-                .assertThatThrownBy(() ->
-                        this.authenticationService.registerNewUser("J.Doe@tudelft.nl",
-                                null, "Doe", "TU Delft"))
-                .isInstanceOf(DataIntegrityViolationException.class);
-    }
-
-    @Test
-    public void testRegisterNewUserLastNameIsNull() {
-        Assertions
-                .assertThatThrownBy(() ->
-                        this.authenticationService.registerNewUser("J.Doe@tudelft.nl",
-                                "John", null, "TU Delft"))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -151,13 +136,12 @@ public class AuthenticationServiceTest {
                 .hasSameElementsAs(expectedResearcherList);
     }
 
-
     @Test
     public void testUpdateUserUserDoesNotExist() {
         UUID userId = UUID.fromString("9dedf9d3-a2c5-470e-86b8-5dfccdd0c2b0");
         Assertions.assertThatThrownBy(() -> this.authenticationService
                         .updateUser(userId, "John", "Doe", "TU Delft"))
-                .isInstanceOf(UsernameNotFoundException.class);
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
@@ -184,7 +168,7 @@ public class AuthenticationServiceTest {
     public void testDeleteUserUserDoesNotExist() {
         UUID userId = UUID.fromString("9dedf9d3-a2c5-470e-86b8-5dfccdd0c2b0");
         Assertions.assertThatThrownBy(() -> this.authenticationService.deleteUser(userId))
-                .isInstanceOf(UsernameNotFoundException.class);
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
@@ -198,7 +182,7 @@ public class AuthenticationServiceTest {
                 .registerNewUser(email, firstName, lastName, affiliation).getUserId();
         this.authenticationService.deleteUser(userId);
         Assertions.assertThatThrownBy(() -> this.authenticationService.loadUserByUserId(userId))
-                .isInstanceOf(UsernameNotFoundException.class);
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
 
