@@ -88,11 +88,6 @@ public class QueryController {
     @ResponseBody
     public void queryChain(HttpServletRequest request,
                            HttpServletResponse response) throws IOException, GatewayException {
-        Jws<Claims> jwtClaims = this.jwtProvider.resolveJwtClaims(request);
-        if (this.jwtProvider.getRole(jwtClaims) == UserRole.UNKNOWN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Operation not allowed");
-        }
-
         // TODO: create a more general API
         String version;
         try {

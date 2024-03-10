@@ -69,6 +69,8 @@ public class SecurityConfig {
                             .hasAuthority(UserRole.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "/api/users/delete")
                             .hasAuthority(UserRole.ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/api/queries")
+                            .hasAuthority(UserRole.RESEARCHER.name())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
