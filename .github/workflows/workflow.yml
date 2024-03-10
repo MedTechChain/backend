@@ -51,17 +51,6 @@ jobs:
           ./gradlew jacocoTestCoverageVerification
           ./gradlew jacocoTestReport
 
-        # Add the coverage computed by JaCoCo to the PR
-      - name: Add coverage to PR
-        id: jacoco
-        uses: madrapps/jacoco-report@v1.6.1
-        with:
-          paths: ${{ github.workspace }}/**/build/reports/jacoco/**/index.html
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 40
-          min-coverage-changed-files: 60
-        if: github.event_name == 'pull_request'
-
         # Create a JaCoCo Badge with the computed coverage (can be found on the workflow page)
       - name: Generate JaCoCo Badge
         uses: cicirello/jacoco-badge-generator@v2.11.0
