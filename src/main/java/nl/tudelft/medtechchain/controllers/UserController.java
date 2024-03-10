@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import nl.tudelft.medtechchain.jwt.JwtProvider;
 import nl.tudelft.medtechchain.model.Researcher;

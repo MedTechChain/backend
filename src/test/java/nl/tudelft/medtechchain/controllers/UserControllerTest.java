@@ -14,8 +14,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import nl.tudelft.medtechchain.jwt.JwtProvider;
 import nl.tudelft.medtechchain.model.Researcher;
 import nl.tudelft.medtechchain.model.UserData;
@@ -49,7 +49,6 @@ public class UserControllerTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
 
     // Taken from data.sql. Make sure to update these fields in case of changes in data.sql
     private static final String ADMIN_USERNAME = "admintest";
@@ -135,10 +134,8 @@ public class UserControllerTest {
         Assertions.assertThat(jsonNode.has("expires_in")).isTrue();
 
         String jwt = jsonNode.get("jwt").asText();
-        Optional<Jws<Claims>> claimsOptional = this.jwtProvider.validateAndParseClaims(jwt);
-        Assertions.assertThat(claimsOptional).isPresent();
+        Jws<Claims> claims = this.jwtProvider.parseClaims(jwt);
 
-        Jws<Claims> claims = claimsOptional.get();
         Assertions.assertThat(this.jwtProvider.getUserId(claims)).isEqualTo(ADMIN_USER_ID);
         Assertions.assertThat(this.jwtProvider.getRole(claims)).isEqualTo(UserRole.ADMIN);
         Assertions.assertThat(this.jwtProvider.isExpired(claims)).isFalse();
@@ -167,10 +164,8 @@ public class UserControllerTest {
         Assertions.assertThat(jsonNode.has("expires_in")).isTrue();
 
         String jwt = jsonNode.get("jwt").asText();
-        Optional<Jws<Claims>> claimsOptional = this.jwtProvider.validateAndParseClaims(jwt);
-        Assertions.assertThat(claimsOptional).isPresent();
+        Jws<Claims> claims = this.jwtProvider.parseClaims(jwt);
 
-        Jws<Claims> claims = claimsOptional.get();
         Assertions.assertThat(this.jwtProvider.getUserId(claims)).isEqualTo(user.getUserId());
         Assertions.assertThat(this.jwtProvider.getRole(claims)).isEqualTo(UserRole.RESEARCHER);
         Assertions.assertThat(this.jwtProvider.isExpired(claims)).isFalse();
@@ -459,5 +454,49 @@ public class UserControllerTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(this.userDataRepository.findByUserId(userId)).isEmpty();
+    }
+
+
+    // SOME TESTS FOR JWT
+    @Test
+    public void testJwtExpired() throws Exception {
+        UUID userId = this.userDataRepository.save(this.testResearcher1).getUserId();
+        long jwtExpirationTime = TimeUnit.MINUTES.toMillis(this.jwtProvider.getJwtExpirationTime());
+        long issueTime = System.currentTimeMillis() - jwtExpirationTime - 60000; // 1 minute offset
+        Date issueDate = new Date(issueTime);
+
+        String jwt = this.jwtProvider.generateJwtToken(ADMIN_USER_ID, UserRole.ADMIN, issueDate);
+
+        String responseString = this.mockMvc
+                .perform(delete(DELETE_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .queryParam("user_id", userId.toString()))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+        Assertions.assertThat(responseString).isEqualTo("JWT has expired");
+    }
+
+    @Test
+    public void testJwtUserDoesNotExist() throws Exception {
+        String jwt = this.jwtProvider.generateJwtToken(randomUserId, UserRole.ADMIN, new Date());
+
+        String responseString = this.mockMvc
+                .perform(delete(DELETE_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .queryParam("user_id", randomUserId.toString()))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+        Assertions.assertThat(responseString).isEqualTo("JWT is invalid");
+    }
+
+    @Test
+    public void testJwtInvalidJwt() throws Exception {
+        String responseString = this.mockMvc
+                .perform(delete(DELETE_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer jwt")
+                        .queryParam("user_id", randomUserId.toString()))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+        Assertions.assertThat(responseString).isEqualTo("JWT is invalid");
     }
 }

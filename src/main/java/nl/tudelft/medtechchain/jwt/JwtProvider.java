@@ -1,8 +1,11 @@
 package nl.tudelft.medtechchain.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
@@ -14,9 +17,7 @@ import nl.tudelft.medtechchain.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 
 /**
@@ -96,26 +97,25 @@ public class JwtProvider {
      *
      * @param token                     the JWT token, as String without "Bearer " prefix
      * @return                          the JWT claims if the token is valid and has not expired yet
+     * @throws ExpiredJwtException      if the JWT has expired
+     * @throws JwtException             if there is an error when parsing and/or validating the JWT
      */
-    public Optional<Jws<Claims>> validateAndParseClaims(String token) {
+    public Jws<Claims> parseClaims(String token) throws ExpiredJwtException, JwtException {
         try {
             Jws<Claims> claims = Jwts.parser().verifyWith(this.jwtSecretKey)
                     .build().parseSignedClaims(token);
             // Check if the fields are valid (userID and role)
             UUID userId = this.getUserId(claims);
-            if (this.getRole(claims).equals(UserRole.UNKNOWN)) {
-                return Optional.empty();
-            }
+            this.getRole(claims);
             // Check if the user with the given userID exists
             this.authenticationService.loadUserByUserId(userId);
-            // Check if the JWT has expired
-            if (this.isExpired(claims)) {
-                return Optional.empty();
-            }
             // Since the JWT is valid, return the claims
-            return Optional.of(claims);
-        } catch (Exception e) {
-            return Optional.empty();
+            return claims;
+        } catch (ExpiredJwtException e) {
+            throw new ExpiredJwtException(e.getHeader(), e.getClaims(), "JWT has expired");
+        } catch (JwtException | IllegalArgumentException | EntityNotFoundException e) {
+            // Make IllegalArgumentException appear as JwtException for better exception handling
+            throw new JwtException("JWT is invalid");
         }
     }
 
@@ -132,16 +132,15 @@ public class JwtProvider {
     /**
      * Gets the user role from the JWT claims.
      * If the role cannot be determined, "unknown" is returned to the caller method.
+     * Note that this method assumes that the role is valid, i.e. "Admin" (=0) or RESEARCHER (=1),
+     *  otherwise IllegalArgumentException will be thrown when creating the UserRole enum.
      *
      * @param claims                    the (extracted) claims from the JWT
      * @return                          the user role present in the payload of the JWT
+     * @throws IllegalArgumentException if the role in the claims is invalid
      */
-    public UserRole getRole(Jws<Claims> claims) {
+    public UserRole getRole(Jws<Claims> claims) throws IllegalArgumentException {
         String role = claims.getPayload().get("role").toString().toUpperCase();
-        try {
-            return UserRole.valueOf(role);
-        } catch (IllegalArgumentException e) {
-            return UserRole.UNKNOWN;
-        }
+        return UserRole.valueOf(role);
     }
 }
