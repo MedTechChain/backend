@@ -12,12 +12,12 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import nl.tudelft.medtechchain.service.AuthenticationService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 
 
 /**
@@ -50,7 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         Optional<String> resolvedJwt = this.jwtProvider.getJwtFromHeader(request);
         if (resolvedJwt.isEmpty()) {
-            filterChain.doFilter(request, response);
+            // Only /api/users/login endpoint can be accessed without JWT
+            // If another endpoint is accessed without JWT, then 401 status code is returned
+            if (!request.getPathInfo().equals("/api/users/login")) {
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), "No Bearer token");
+            } else {
+                filterChain.doFilter(request, response);
+            }
             return;
         }
         String jwt = resolvedJwt.get();
@@ -61,6 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UUID userId = this.jwtProvider.getUserId(claims.get());
                 UserDetails user = this.authenticationService.loadUserByUserId(userId);
 
+                // Set the user as authenticated
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

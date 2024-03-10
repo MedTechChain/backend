@@ -1,3 +1,5 @@
+DELETE FROM user_data;
+
 INSERT INTO user_data
     (user_id,
     account_non_expired,
@@ -21,9 +23,8 @@ VALUES
     true,
     'Admin',
     'Test',
-    '$2a$12$p7ghltJaGDIM9txtLU7O.O9xbcaXNz/nPfx.GAraFZCPUlaDCY4aa',
+    '$2a$12$7b8F11vBUuyACN8mHzDhrOsFhWc2DWbXLUrpLavl4FXdxGh9z6hxK',
     0,
-    'iandrews')
-ON CONFLICT (user_id) DO NOTHING;
+    'admintest');
 
 
