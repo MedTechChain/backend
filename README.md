@@ -118,3 +118,14 @@ authentication and setting up the database connection.
 This is a testing SMTP server, having the interface accessible at `localhost:11000`.
 Mind that the backend is configured by default to send emails here. If you want to send
 real emails, please use the `demo` profile. Mind that when running `demo` profile, all volumes are deleted.
+
+## Run the infrastructure
+
+In order to run the blockchain infrastructure, go to `dev-tools` repository which has to be present in the parent directory. Then run:
+
+```shell
+./infra-up.sh
+./cc-deploy.sh
+```
+
+Check [dev-tools](https://github.com/MedTechChain/dev-tools) for more instructions regarding running the infrastructure.

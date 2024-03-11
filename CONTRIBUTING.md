@@ -56,7 +56,7 @@ For *testing* configurations, see [src/test/resources/application.properties](sr
 
 ### Fabric Gateway
 
-In order to run the Fabric Gateway, you need to have [chaincode](https://github.com/MedTechChain/chaincode) and [dev-tools](https://github.com/MedTechChain/dev-tools) repositories cloned in the parent directory of this repository (i.e. you will have `chaincode`, `dev-tools` and `backend` in one directory). To run the infrastructure, run `./infra-up.sh`.
+In order to run the Fabric Gateway, you need to have [chaincode](https://github.com/MedTechChain/chaincode) and [dev-tools](https://github.com/MedTechChain/dev-tools) repositories cloned in the parent directory of this repository (i.e. you will have `chaincode`, `dev-tools` and `backend` in one directory). To run the infrastructure, run `./infra-up.sh` and then `./cc-deploy.sh`.
 
 ## Testing
 
