@@ -56,8 +56,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // For all endpoints except /api/users/login, 401 will be returned
-                        //   if JWT token is missing (see JwtAuthenticationProvider for details)
+                        // For all endpoints except /api/users/login and /api/users/change_password,
+                        //  401 will be returned if the JWT token is missing
+                        //  (see JwtAuthenticationProvider for details)
                         .requestMatchers(HttpMethod.POST, "/api/users/login")
                             .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/register")
@@ -70,6 +71,8 @@ public class SecurityConfig {
                             .hasAuthority(UserRole.ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/api/queries")
                             .hasAuthority(UserRole.RESEARCHER.name())
+                        .requestMatchers(HttpMethod.PUT, "/api/users/change_password")
+                            .permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AuthenticationService authenticationService;
 
     private final JwtProvider jwtProvider;
+
+    private final Set<String> noJwtPaths = Set.of("/api/users/login", "/api/users/change_password");
 
     /**
      * Performs the authentication step using a JWT (if present).
@@ -52,10 +55,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (resolvedJwt.isEmpty()) {
             // Only /api/users/login endpoint can be accessed without JWT
             // If another endpoint is accessed without JWT, then 401 status code is returned
-            if (!request.getRequestURI().equals("/api/users/login")) {
-                response.sendError(HttpStatus.UNAUTHORIZED.value(), "No Bearer token");
-            } else {
+            if (this.noJwtPaths.contains(request.getRequestURI())) {
                 filterChain.doFilter(request, response);
+            } else {
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.getWriter().write("No Bearer token");
             }
             return;
         }
@@ -65,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             claims = this.jwtProvider.parseClaims(jwt);
         } catch (Exception e) {
-            response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write(e.getMessage());
             return;
         }

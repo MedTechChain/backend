@@ -67,9 +67,8 @@ public class UserController {
         String username = jsonNode.get("username").asText();
         String password = jsonNode.get("password").asText();
 
-        this.authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
-        );
+        this.authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
         UserData user = this.authenticationService.loadUserByUsername(username);
         String jwt = this.jwtProvider
@@ -175,6 +174,28 @@ public class UserController {
         }
 
         this.authenticationService.deleteUser(userId);
+    }
+
+    /**
+     * Changes the password of the specified user (defined by the username in the request body).
+     * Everyone is allowed to perform this operation, however the provided password for the
+     *  specified username must match with the password stored in the database.
+     *
+     * @param request           the HTTP request with the username and old and new passwords
+     * @throws IOException      if something goes wrong during the JSON deserialization process
+     */
+    @PutMapping("/change_password")
+    @ResponseStatus(HttpStatus.OK)
+    public void changePassword(HttpServletRequest request) throws IOException {
+        JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
+        String username = jsonNode.get("username").asText();
+        String oldPassword = jsonNode.get("old_password").asText();
+        String newPassword = jsonNode.get("new_password").asText();
+
+        this.authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(username, oldPassword));
+
+        this.authenticationService.changePassword(username, oldPassword, newPassword);
     }
 
     /**
