@@ -1,4 +1,4 @@
-package nl.tudelft.medtechchain.model;
+package nl.tudelft.medtechchain.models;
 
 import java.util.Collection;
 import java.util.Set;

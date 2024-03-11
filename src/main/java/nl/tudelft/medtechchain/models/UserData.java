@@ -1,4 +1,4 @@
-package nl.tudelft.medtechchain.model;
+package nl.tudelft.medtechchain.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 
 /**
- * A class that is used to store the user data.
+ * A class that is used to store the user data (userID, username, password, email,
+ *  first name, last name, affiliation etc.).
  * Username is used to log in researcher.
  * UserID is used internally to identify the user (e.g. when deleting a user);
  *  it is also used as "Subject" in the JWT token used for the authentication.

@@ -1,12 +1,12 @@
-package nl.tudelft.medtechchain.service;
+package nl.tudelft.medtechchain.services;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
-import nl.tudelft.medtechchain.model.Researcher;
-import nl.tudelft.medtechchain.model.UserData;
-import nl.tudelft.medtechchain.model.UserRole;
+import nl.tudelft.medtechchain.models.Researcher;
+import nl.tudelft.medtechchain.models.UserData;
+import nl.tudelft.medtechchain.models.UserRole;
 import nl.tudelft.medtechchain.repositories.UserDataRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

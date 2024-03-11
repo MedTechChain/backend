@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
-import nl.tudelft.medtechchain.service.AuthenticationService;
+import nl.tudelft.medtechchain.services.AuthenticationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (resolvedJwt.isEmpty()) {
             // Only /api/users/login endpoint can be accessed without JWT
             // If another endpoint is accessed without JWT, then 401 status code is returned
-            if (!request.getPathInfo().equals("/api/users/login")) {
+            if (!request.getRequestURI().equals("/api/users/login")) {
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), "No Bearer token");
             } else {
                 filterChain.doFilter(request, response);

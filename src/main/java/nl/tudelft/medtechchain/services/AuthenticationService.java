@@ -1,4 +1,4 @@
-package nl.tudelft.medtechchain.service;
+package nl.tudelft.medtechchain.services;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,17 +12,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.AllArgsConstructor;
-import nl.tudelft.medtechchain.model.Researcher;
-import nl.tudelft.medtechchain.model.UserData;
-import nl.tudelft.medtechchain.model.UserRole;
+import nl.tudelft.medtechchain.models.Researcher;
+import nl.tudelft.medtechchain.models.UserData;
+import nl.tudelft.medtechchain.models.UserRole;
 import nl.tudelft.medtechchain.repositories.UserDataRepository;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 
 /**

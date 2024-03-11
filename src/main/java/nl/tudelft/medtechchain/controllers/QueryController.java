@@ -24,7 +24,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 /**
- * A controller class that gets queries from researchers (or the admin) and sends them to the chain.
+ * A controller class that gets queries from researchers,
+ *  sends them to the chain and returns the result.
  * The code related to the Gateway API is taken from:
  * <a href="https://hyperledger-fabric.readthedocs.io/en/latest/write_first_app.html">Hyperledger Fabric</a>
  * <a href="https://github.com/hyperledger/fabric-samples/tree/main/asset-transfer-basic/application-gateway-java">Fabric Samples</a>

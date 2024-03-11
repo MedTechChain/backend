@@ -1,4 +1,4 @@
-package nl.tudelft.medtechchain.model;
+package nl.tudelft.medtechchain.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;

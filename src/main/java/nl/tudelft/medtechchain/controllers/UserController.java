@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import nl.tudelft.medtechchain.jwt.JwtProvider;
-import nl.tudelft.medtechchain.model.Researcher;
-import nl.tudelft.medtechchain.model.UserData;
-import nl.tudelft.medtechchain.service.AuthenticationService;
+import nl.tudelft.medtechchain.models.Researcher;
+import nl.tudelft.medtechchain.models.UserData;
+import nl.tudelft.medtechchain.services.AuthenticationService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,7 +35,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 /**
- * A (REST) controller class that provides API endpoints and interacts with the Service class.
+ * A controller class that provides API endpoints for managing users
+ *  and interacts with the AuthenticationService class.
  */
 @RestController
 @RequestMapping("/api/users")
