@@ -17,6 +17,7 @@ import nl.tudelft.medtechchain.models.UserData;
 import nl.tudelft.medtechchain.models.UserRole;
 import nl.tudelft.medtechchain.repositories.UserDataRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -213,5 +214,22 @@ public class AuthenticationService implements UserDetailsService {
         // Check if the user with the specified userId exists
         loadUserByUserId(userId);
         this.userDataRepository.deleteByUserId(userId);
+    }
+
+    /**
+     * Changes the password of the user with the given username.
+     * The provided old (current) password is compared to the stored old (current) password.
+     *
+     * @param username      the username of the user whose password will be changed
+     * @param oldPassword   the old (current) password of the specified user
+     * @param newPassword   the new password for the specified user
+     */
+    public void changePassword(String username, String oldPassword, String newPassword) {
+        UserData user = this.loadUserByUsername(username);
+        if (!this.passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BadCredentialsException("Provided old password does not match the actual");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        this.userDataRepository.save(user);
     }
 }

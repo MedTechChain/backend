@@ -3,6 +3,7 @@ package nl.tudelft.medtechchain.services;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import nl.tudelft.medtechchain.models.Researcher;
 import nl.tudelft.medtechchain.models.UserData;
@@ -14,7 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.jdbc.Sql;
 
 @SpringBootTest
@@ -25,6 +28,9 @@ public class AuthenticationServiceTest {
 
     @Autowired
     private UserDataRepository userDataRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setup() {
@@ -173,18 +179,46 @@ public class AuthenticationServiceTest {
 
     @Test
     public void testDeleteUserUserExists() {
-        String firstName = "John";
-        String lastName = "Doe";
-        String email = "J.Doe@tudelft.nl";
-        String affiliation = "TU Delft";
-
         UUID userId = this.authenticationService
-                .registerNewUser(email, firstName, lastName, affiliation).getUserId();
+                .registerNewUser("J.Doe@tudelft.nl", "John", "Doe", "TU Delft").getUserId();
         this.authenticationService.deleteUser(userId);
         Assertions.assertThatThrownBy(() -> this.authenticationService.loadUserByUserId(userId))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
+    @Test
+    public void testChangePasswordUserDoesNotExist() {
+        Assertions.assertThatThrownBy(() ->
+                    this.authenticationService.changePassword("jdoe", "password1", "password2"))
+                .isInstanceOf(UsernameNotFoundException.class);
+    }
+
+    @Test
+    public void testChangePasswordWrongCredentials() {
+        UserData user = new UserData("jdoe", "password1",
+                "J.Doe@tudelft.nl", "John", "Doe", "TU Delft", UserRole.RESEARCHER);
+        user.setPassword(this.passwordEncoder.encode("password1"));
+        this.userDataRepository.save(user);
+
+        Assertions.assertThatThrownBy(() ->
+                this.authenticationService.changePassword("jdoe", "123456", "password2"))
+                .isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    public void testChangePasswordSuccessful() {
+        UserData user = new UserData("jdoe", "password1",
+                "J.Doe@tudelft.nl", "John", "Doe", "TU Delft", UserRole.RESEARCHER);
+        user.setPassword(this.passwordEncoder.encode("password1"));
+        user = this.userDataRepository.save(user);
+
+        this.authenticationService.changePassword("jdoe", "password1", "password2");
+
+        UserData updatedUser = this.userDataRepository.findByUserId(user.getUserId()).get();
+        Assertions.assertThat(updatedUser.getPassword()).isNotEqualTo(user.getPassword());
+        Assertions.assertThat(this.passwordEncoder
+                .matches("password2", updatedUser.getPassword())).isTrue();
+    }
 
     @Test
     public void testEqualsTrue() {
