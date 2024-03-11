@@ -1,7 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
-cd "$SCRIPT_DIR"
+cd -- "$(dirname "$0")"
 
 if [ -z "$1" ] || ([ "$1" != "dev" ] && [ "$1" != "demo" ]); then
     echo "Usage: ./run-be-docker.sh <ENV>"
@@ -14,21 +13,42 @@ if [ "$1" = "demo" ] && [ -z "$2" ]; then
   exit 2
 fi
 
+source .env
+export BE_IMAGE_NAME
+export LOCAL_USER_CRYPTO_PATH
+
+if [ ! -d "$FABRIC_GEN_USER_CRYPTO_PATH" ]; then
+    echo ">>> ERROR: Infrastructure crypto material not found. Make sure to run the fabric infrastructure before backend/"
+    exit 3
+fi
+
+rm -rf "$LOCAL_USER_CRYPTO_PATH"
+mkdir -p "$LOCAL_USER_CRYPTO_PATH"
+cp -RT "$FABRIC_GEN_USER_CRYPTO_PATH" "$LOCAL_USER_CRYPTO_PATH"
+
 if [ "$1" = "demo" ]; then
-  export SMTP_PASSWORD="$2"
   ./clean.sh all
 else
   ./clean.sh
 fi
 
-BE_DIR="$SCRIPT_DIR/.."
-cd "$BE_DIR"
+SMTP_PASSWORD="$2"
+export SMTP_PASSWORD
 
-BE_IMAGE_NAME="medtechchain/backend-ums"
-export BE_IMAGE_NAME
+
+cd ..
 
 ./gradlew bootBuildImage --imageName="$BE_IMAGE_NAME"
 
-cd "$SCRIPT_DIR"
+if [ $? -ne 0 ]; then
+    echo ">>> ERROR: backend build failed with status $?"
+    exit 4
+fi
 
-docker-compose --profile "$1" -p medtechchain-ums up -d
+cd ./dev-tools
+
+if [ ! "$(docker network ls --format "{{.Name}}" | grep "^$NETWORK")" ]; then
+      docker network create --driver bridge "$NETWORK"
+fi
+
+docker-compose --profile "$1" -p medtechchain up -d

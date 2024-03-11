@@ -1,9 +1,14 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
-cd "$SCRIPT_DIR"
+cd -- "$(dirname "$0")"
 
-BE_IMAGE_NAME="medtechchain/backend-ums"
+source .env
+
 export BE_IMAGE_NAME
 
-docker-compose --profile deps -p medtechchain-ums up -d
+if [ ! "$(docker network ls --format "{{.Name}}" | grep "^$NETWORK")" ]; then
+      docker network create --driver bridge "$NETWORK"
+fi
+
+echo ">>> Running MedTechChain backend dependencies (IGNORE WARNINGS) <<<"
+docker-compose --profile deps -p medtechchain up -d
