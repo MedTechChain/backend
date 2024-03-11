@@ -26,12 +26,6 @@ rm -rf "$LOCAL_USER_CRYPTO_PATH"
 mkdir -p "$LOCAL_USER_CRYPTO_PATH"
 cp -RT "$FABRIC_GEN_USER_CRYPTO_PATH" "$LOCAL_USER_CRYPTO_PATH"
 
-if [ "$1" = "demo" ]; then
-  ./clean.sh all
-else
-  ./clean.sh
-fi
-
 SMTP_PASSWORD="$2"
 export SMTP_PASSWORD
 

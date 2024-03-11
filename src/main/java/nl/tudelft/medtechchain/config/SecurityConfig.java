@@ -29,7 +29,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * Namely, it creates beans for SecurityFilterChain, AuthenticationProvider
  *  and AuthenticationManager, and it also creates the CorsConfigurationSource bean.
  */
-@SuppressWarnings("checkstyle:LineLength")
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor

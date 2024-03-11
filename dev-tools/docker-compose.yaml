@@ -58,7 +58,7 @@ services:
 
   medtechchain-backend-dev: &medtechchain-backend-dev
     image: ${BE_IMAGE_NAME}
-    container_name: medtechchain-backend
+    container_name: medtechchain-backend-dev
     depends_on:
       - postgres
     profiles:
@@ -84,6 +84,7 @@ services:
 
   medtechchain-backend:
     <<: *medtechchain-backend-dev
+    container_name: medtechchain-backend
     profiles:
       - demo
     environment:
