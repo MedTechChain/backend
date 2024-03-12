@@ -62,7 +62,7 @@ public class AuthenticationService implements UserDetailsService {
      * @return                              the user (data) if they have been found in the database
      * @throws EntityNotFoundException      when the user with the given userID has not been found
      */
-    public UserData loadUserByUserId(UUID userId) throws UsernameNotFoundException {
+    public UserData loadUserByUserId(UUID userId) throws EntityNotFoundException {
         Optional<UserData> user = this.userDataRepository.findByUserId(userId);
         if (user.isEmpty()) {
             String message = String.format("Could not find user with userID %s", userId.toString());

@@ -62,6 +62,7 @@ public class UserControllerTest {
     private static final String GET_ALL_RESEARCHERS_API = "/api/users/researchers";
     private static final String UPDATE_API = "/api/users/update";
     private static final String DELETE_API = "/api/users/delete";
+    private static final String CHANGE_PASSWORD_API = "/api/users/change_password";
 
     private final UUID randomUserId = UUID.fromString("2d38ca54-2bc4-4508-ab60-24d84b9441df");
     private final UserData testResearcher1 = new UserData("jdoe", "password1",
@@ -106,17 +107,37 @@ public class UserControllerTest {
     }
 
     @Test
-    public void logInAdminWrongPassword() throws Exception {
+    public void testLogInBadRequest() throws Exception {
+        String jsonRequest = createJson("username", ADMIN_USERNAME, "not_password", "no_password");
+
+        this.mockMvc
+                .perform(post(LOGIN_API).contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest).characterEncoding("utf-8"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testLogInAdminWrongUsername() throws Exception {
+        String jsonRequest = createJson("username", "the_best_admin", "password", ADMIN_PASSWORD);
+
+        this.mockMvc
+                .perform(post(LOGIN_API).contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest).characterEncoding("utf-8"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testLogInAdminWrongPassword() throws Exception {
         String jsonRequest = createJson("username", ADMIN_USERNAME, "password", "no_password");
 
         this.mockMvc
                 .perform(post(LOGIN_API).contentType(MediaType.APPLICATION_JSON)
                     .content(jsonRequest).characterEncoding("utf-8"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void logInAdminSuccessful() throws Exception {
+    public void testLogInAdminSuccessful() throws Exception {
         String jsonRequest = createJson("username", ADMIN_USERNAME, "password", ADMIN_PASSWORD);
 
         MockHttpServletResponse response = this.mockMvc
@@ -142,11 +163,11 @@ public class UserControllerTest {
     }
 
     @Test
-    public void logInResearcherSuccessful() throws Exception {
+    public void testLogInResearcherSuccessful() throws Exception {
         String hashedPassword = this.passwordEncoder.encode("password1");
         this.testResearcher1.setPassword(hashedPassword);
 
-        UserData user = this.userDataRepository.save(testResearcher1);
+        UserData user = this.userDataRepository.save(this.testResearcher1);
         String jsonRequest = createJson("username", user.getUsername(), "password", "password1");
 
         MockHttpServletResponse response = this.mockMvc
@@ -175,7 +196,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserNoJwt() throws Exception {
+    public void testRegisterNewUserNoJwt() throws Exception {
         String jsonRequest = createJson("first_name", "John", "last_name", "Doe",
                 "email", "J.Doe@tudelft.nl", "affiliation", "TU Delft");
 
@@ -186,8 +207,8 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserNotAllowed() throws Exception {
-        UUID userId = this.userDataRepository.save(testResearcher2).getUserId();
+    public void testRegisterNewUserNotAllowed() throws Exception {
+        UUID userId = this.userDataRepository.save(this.testResearcher2).getUserId();
 
         String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
         String jsonRequest = createJson("first_name", "Jane", "last_name", "Doe",
@@ -202,7 +223,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserNoBearerPrefix() throws Exception {
+    public void testRegisterNewUserNoBearerPrefix() throws Exception {
         String jwt = this.createAdminJwt();
         String jsonRequest = createJson("first_name", "Jane", "last_name", "Doe",
                 "email", "J.Doe-1@tudelft.nl", "affiliation", "TU Delft");
@@ -216,7 +237,21 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserInvalidEmail() throws Exception {
+    public void testRegisterNewUserBadRequest() throws Exception {
+        String jwt = this.createAdminJwt();
+        String jsonRequest = createJson("first_name", "Jane", "very_last_name", "Doe",
+                "email", "J.Doe-1@tudelft.nl", "affiliation", "TU Delft");
+
+        this.mockMvc
+                .perform(post(REGISTER_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest).characterEncoding("utf-8"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testRegisterNewUserInvalidEmail() throws Exception {
         String jwt = this.createAdminJwt();
         String jsonRequest = createJson("first_name", "John", "last_name", "Doe",
                 "email", "J.Doe[at]tudelft.nl", "affiliation", "TU Delft");
@@ -230,7 +265,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserEmptyName() throws Exception {
+    public void testRegisterNewUserEmptyName() throws Exception {
         String jwt = this.createAdminJwt();
         String jsonRequest = createJson("first_name", "", "last_name", "",
                 "email", "J.Doe@tudelft.nl", "affiliation", "TU Delft");
@@ -244,7 +279,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserEmailAlreadyExists() throws Exception {
+    public void testRegisterNewUserEmailAlreadyExists() throws Exception {
         this.userDataRepository.save(this.testResearcher1);
 
         String jwt = this.createAdminJwt();
@@ -260,7 +295,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testRegisterUserSuccessful() throws Exception {
+    public void testRegisterNewUserSuccessful() throws Exception {
         String jwt = this.createAdminJwt();
         String jsonRequest = createJson("first_name", "John", "last_name", "Doe",
                 "email", "J.Doe@tudelft.nl", "affiliation", "TU Delft");
@@ -365,6 +400,21 @@ public class UserControllerTest {
     }
 
     @Test
+    public void testUpdatePersonalDetailsBadRequest() throws Exception {
+        String jwt = this.createAdminJwt();
+        String jsonRequest = createJson("first_name", "John", "very_last_name",
+                "Roe", "affiliation", "TU Delft");
+
+        this.mockMvc
+                .perform(put(UPDATE_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .queryParam("user_id", this.randomUserId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void testUpdatePersonalDetailsNoUser() throws Exception {
         String jwt = this.createAdminJwt();
         String jsonRequest = createJson("first_name", "John", "last_name",
@@ -420,6 +470,19 @@ public class UserControllerTest {
     }
 
     @Test
+    public void testDeleteUserBadRequest() throws Exception {
+        UUID userId = this.userDataRepository.save(this.testResearcher1).getUserId();
+
+        String jwt = this.createAdminJwt();
+
+        this.mockMvc
+                .perform(delete(DELETE_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .queryParam("userId", userId.toString()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void testDeleteUserBadUserId() throws Exception {
         String jwt = this.createAdminJwt();
 
@@ -454,6 +517,64 @@ public class UserControllerTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(this.userDataRepository.findByUserId(userId)).isEmpty();
+    }
+
+    @Test
+    public void testChangePasswordUserDoesNotExist() throws Exception {
+        String jsonRequest = createJson("username", "jdoe", "old_password",
+                "password1", "new_password", "password2");
+
+        this.mockMvc
+                .perform(put(CHANGE_PASSWORD_API).contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest).characterEncoding("utf-8"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testChangePasswordBadRequest() throws Exception {
+        String jsonRequest = createJson("username", "jdoe", "oldPassword",
+                "password1", "newPassword", "password2");
+
+        this.mockMvc
+                .perform(put(CHANGE_PASSWORD_API).contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest).characterEncoding("utf-8"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testChangePasswordBadCredentials() throws Exception {
+        String hashedPassword = this.passwordEncoder.encode("password1");
+        this.testResearcher1.setPassword(hashedPassword);
+
+        UserData user = this.userDataRepository.save(this.testResearcher1);
+        String jsonRequest = createJson("username", user.getUsername(), "old_password",
+                "notpassword1", "new_password", "password2");
+
+        this.mockMvc
+                .perform(put(CHANGE_PASSWORD_API).contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest).characterEncoding("utf-8"))
+                .andExpect(status().isUnauthorized());
+
+        // Revert the changed password
+        this.testResearcher1.setPassword("password1");
+    }
+
+    @Test
+    public void testChangePasswordSuccessful() throws Exception {
+        String hashedPassword = this.passwordEncoder.encode("password1");
+        this.testResearcher1.setPassword(hashedPassword);
+
+        UserData user = this.userDataRepository.save(this.testResearcher1);
+        String jsonRequest = createJson("username", user.getUsername(), "old_password",
+                "password1", "new_password", "password2");
+
+        this.mockMvc
+                .perform(put(CHANGE_PASSWORD_API).contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest).characterEncoding("utf-8"))
+                .andExpect(status().isOk());
+
+        // Revert the changed password
+        this.testResearcher1.setPassword("password1");
     }
 
 

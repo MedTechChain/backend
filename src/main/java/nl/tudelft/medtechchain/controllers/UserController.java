@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -50,6 +51,21 @@ public class UserController {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * Checks whether the given JSON node has all the specified fields.
+     * If at least one field is not present in the JSON node,
+     *  a ResponseStatusException is thrown with the status code 400 Bad Request.
+     *
+     * @param jsonNode          a JSON node representing the JSON object
+     * @param fields            fields to be checked
+     */
+    private void checkJsonFields(JsonNode jsonNode, String... fields) {
+        for (String field : fields) {
+            if (!jsonNode.has(field)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+        }
+    }
 
     /**
      * Logs in the user. If successful, sends back a JSON with JWT.
@@ -62,8 +78,10 @@ public class UserController {
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void logIn(HttpServletRequest request, HttpServletResponse response) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
+        this.checkJsonFields(jsonNode, "username", "password");
+
         String username = jsonNode.get("username").asText();
         String password = jsonNode.get("password").asText();
 
@@ -93,6 +111,8 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public void registerNewUser(HttpServletRequest request) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
+        this.checkJsonFields(jsonNode, "email", "first_name", "last_name", "affiliation");
+
         String email = jsonNode.get("email").asText();
         String firstName  = jsonNode.get("first_name").asText();
         String lastName = jsonNode.get("last_name").asText();
@@ -142,6 +162,8 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public void changePersonalDetails(HttpServletRequest request) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
+        this.checkJsonFields(jsonNode, "first_name", "last_name", "affiliation");
+
         String firstName = jsonNode.get("first_name").asText();
         String lastName = jsonNode.get("last_name").asText();
         String affiliation = jsonNode.get("affiliation").asText();
@@ -180,6 +202,8 @@ public class UserController {
      * Changes the password of the specified user (defined by the username in the request body).
      * Everyone is allowed to perform this operation, however the provided password for the
      *  specified username must match with the password stored in the database.
+     * If the specified username is incorrect (i.e. the user with the specified username cannot be
+     *  found), then the status code 401 Unauthorized is returned (done by Spring Security).
      *
      * @param request           the HTTP request with the username and old and new passwords
      * @throws IOException      if something goes wrong during the JSON deserialization process
@@ -188,6 +212,8 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public void changePassword(HttpServletRequest request) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
+        this.checkJsonFields(jsonNode, "username", "old_password", "new_password");
+
         String username = jsonNode.get("username").asText();
         String oldPassword = jsonNode.get("old_password").asText();
         String newPassword = jsonNode.get("new_password").asText();
@@ -229,5 +255,16 @@ public class UserController {
     @ExceptionHandler(EntityNotFoundException.class)
     private ResponseEntity<Object> entityNotFound(EntityNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    /**
+     * Sends a custom exception when the provided credentials of a user are incorrect.
+     *
+     * @param e                 the thrown BadCredentialsException
+     * @return                  HTTP response with the status 401 Unauthorized and the error message
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    private ResponseEntity<Object> badCredentials(BadCredentialsException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
     }
 }
