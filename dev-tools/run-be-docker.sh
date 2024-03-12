@@ -18,8 +18,8 @@ export BE_IMAGE_NAME
 export LOCAL_USER_CRYPTO_PATH
 
 if [ ! -d "$FABRIC_GEN_USER_CRYPTO_PATH" ]; then
-    echo ">>> ERROR: Infrastructure crypto material not found. Make sure to run the fabric infrastructure before backend/"
-    exit 3
+    echo ">>> ERROR: Infrastructure crypto material not found. Make sure to run the fabric infrastructure before backend."
+    exit 1
 fi
 
 rm -rf "$LOCAL_USER_CRYPTO_PATH"
@@ -29,14 +29,13 @@ cp -RT "$FABRIC_GEN_USER_CRYPTO_PATH" "$LOCAL_USER_CRYPTO_PATH"
 SMTP_PASSWORD="$2"
 export SMTP_PASSWORD
 
-
 cd ..
 
 ./gradlew bootBuildImage --imageName="$BE_IMAGE_NAME"
 
 if [ $? -ne 0 ]; then
     echo ">>> ERROR: backend build failed with status $?"
-    exit 4
+    exit 2
 fi
 
 cd ./dev-tools
@@ -45,4 +44,4 @@ if [ ! "$(docker network ls --format "{{.Name}}" | grep "^$NETWORK")" ]; then
       docker network create --driver bridge "$NETWORK"
 fi
 
-docker-compose --profile "$1" -p medtechchain up -d
+docker-compose --profile "$1" -p medtechchain-ums up -d
