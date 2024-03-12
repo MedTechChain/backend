@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "70ba28ec-0e2d-44ed-83ee-838b020a1d08",
-		"name": "MedTech Chain",
+		"_postman_id": "618314ae-b487-4d3c-8f1b-c79b6e7ec782",
+		"name": "MedTech Chain Documentation",
 		"description": "Backend API for the User Management Server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "18550693"
@@ -330,7 +330,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"first_name\": \"Johnny\",\n    \"last_name\": \"Doe\",\n    \"affiliation\": \"Delft University of Technology\"\n}",
+							"raw": "{\n    \"first_name\": \"John\",\n    \"last_name\": \"Roe\",\n    \"affiliation\": \"Delft University of Technology\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -357,7 +357,114 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Update Personal Details",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
+										"description": "JWT",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"John\",\n    \"last_name\": \"Roe\",\n    \"affiliation\": \"Delft University of Technology\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8088/api/users/update?user_id=8eeda5c8-8a4c-47de-bdac-880e8c69c233",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8088",
+									"path": [
+										"api",
+										"users",
+										"update"
+									],
+									"query": [
+										{
+											"key": "user_id",
+											"value": "8eeda5c8-8a4c-47de-bdac-880e8c69c233"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "0"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 12 Mar 2024 05:51:36 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
 				},
 				{
 					"name": "Delete Researcher",
@@ -487,7 +594,7 @@
 					]
 				}
 			],
-			"description": "Can do everything, i.e. the admin can do everything that a researcher can and more."
+			"description": "Can do everything related to user management, i.e. the admin can do everything that a researcher can and more. However, the admin cannot run queries on the blockchain."
 		},
 		{
 			"name": "Researcher",
@@ -636,17 +743,11 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
-								"description": "JWT token",
-								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"jdoe\",\n    \"old_password\": \"%n&Z*4vRj@q@S9ww3eUpX))4)s7&p+)8W]TljG4i\",\n    \"new_password\": \"a$Ysit,kw%,6,!,W{i[vci#56q&[.+]r'M$P+#{n\"\n}",
+							"raw": "{\n    \"username\": \"jdoe\",\n    \"old_password\": \"%n&Z*4vRj@q@S9ww3eUpX))4)s7&p+)8W]TljG4i\",\n    \"new_password\": \"more_secure_password\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -667,7 +768,102 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Change Password",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"jdoe\",\n    \"old_password\": \"%n&Z*4vRj@q@S9ww3eUpX))4)s7&p+)8W]TljG4i\",\n    \"new_password\": \"more_secure_password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8088/api/users/change_password",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8088",
+									"path": [
+										"api",
+										"users",
+										"change_password"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "0"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 12 Mar 2024 05:44:00 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
 				}
 			],
 			"description": "A researcher can only log in, change their password and query the chain."

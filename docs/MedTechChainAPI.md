@@ -5,7 +5,8 @@ Backend API for the User Management Server.
 
 ## Admin
 
-Can do everything, i.e. the admin can do everything that a researcher can and more.
+Can do everything related to user management, i.e. the admin can do everything that a researcher can and more.
+However, the admin cannot run queries on the blockchain.
 
 
 ### Register New Researcher
@@ -150,8 +151,8 @@ curl --location 'http://localhost:8088/api/users/researchers' \
 
 ```json
 {
-  "first_name": "Johnny",
-  "last_name": "Doe",
+  "first_name": "John",
+  "last_name": "Roe",
   "affiliation": "Delft University of Technology"
 }
 ```
@@ -160,11 +161,22 @@ curl --location 'http://localhost:8088/api/users/researchers' \
 
 ##### Request
 
-*To be added*
+```shell
+curl --location --request PUT 'http://localhost:8088/api/users/update?user_id=8eeda5c8-8a4c-47de-bdac-880e8c69c233' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk' \
+--data '{
+    "first_name": "John",
+    "last_name": "Roe",
+    "affiliation": "Delft University of Technology"
+}'
+```
 
-##### Request
+##### Response
 
-*To be added*
+`200 OK`
+
+This request does not return any response body.
 
 ---
 
@@ -257,12 +269,9 @@ curl --location 'http://localhost:8088/api/users/login' \
 
 `PUT http://localhost:8088/api/users/change_password`
 
-#### Request Headers
-
 | Header        | Value                                                                                                                                   |
 |---------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | Content-Type  | application/json                                                                                                                        |
-| Authorization | Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk |
 
 #### Body
 
@@ -270,7 +279,7 @@ curl --location 'http://localhost:8088/api/users/login' \
 {
   "username": "jdoe",
   "old_password": "%n&Z*4vRj@q@S9ww3eUpX))4)s7&p+)8W]TljG4i",
-  "new_password": "a$Ysit,kw%,6,!,W{i[vci#56q&[.+]r'M$P+#{n"
+  "new_password": "more_secure_password"
 }
 ```
 
@@ -278,8 +287,17 @@ curl --location 'http://localhost:8088/api/users/login' \
 
 ##### Request
 
-*To be added*
+```shell
+curl --location --request PUT 'http://localhost:8088/api/users/change_password' \
+--data '{
+    "username": "jdoe",
+    "old_password": "weak_password",
+    "new_password": "more_secure_password"
+}'
+```
 
-##### Request
+##### Response
 
-*To be added*
+`200 OK`
+
+This request does not return any response body.
