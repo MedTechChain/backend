@@ -89,7 +89,7 @@ jacocoTestCoverageVerification() {
 			limit {
 				counter = 'BRANCH'
 				value = 'COVEREDRATIO'
-				// minimum = 0.1
+				minimum = 0.1
 			}
 		}
 	}
@@ -101,6 +101,17 @@ jacocoTestReport {
 	dependsOn {
 		test
 		jacocoTestCoverageVerification
+	}
+
+	// We exclude GatewayConfig, since the functionality has been provided to us by the code in the fabric samples
+	// (https://github.com/hyperledger/fabric-samples/tree/main/asset-transfer-basic/application-gateway-java)
+	//  and has not been written by us.
+	// Furthermore, in order to test this class, everything has to be mocked and it is not possible to test this
+	//  class in a proper and meaningful way (especially without actually having to run the fabric infrastructure).
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: ['nl/tudelft/medtechchain/config/GatewayConfig.class'])
+		}))
 	}
 
 	// Output html and csv (used to extract coverage percentage)
