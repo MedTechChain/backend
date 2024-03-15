@@ -13,6 +13,13 @@ See [build.gradle](build.gradle) file for all dependencies.
 
 ## Build
 
+### Load Crypto
+
+Before running the service (IDE or Docker), make sure to copy the crypto
+material required for the integration with Fabric infrastructure.
+
+Use the `scripts/load-crypto.sh` script to automatically copy the crypto material.
+
 ### Command Line
 
 If you want to build the project in the command line, you can run:
@@ -98,19 +105,18 @@ There are three profiles defined in the docker compose:
 - `dev`: run both backend application and its dependencies (database and development tools) in Docker
 - `demo`: run both backend application and database only (no development tools) in Docker
 
-### Scripts usage
+### Command
 
-The scripts in `dev-tools` folder should be used as follows:
-- *BE developer*: run the `./run-deps.sh` to run the database and development tools in Docker while starting the backend application on the same host (i.e., not in Docker)
-- *FE developer*: to get the backend running together with the associated dev environment run `./run-be-docker.sh dev`
-- *DEMO*: for demos, run `./run-be-docker.sh dev <EMAIL_SMTP_PASSWORD>`; this configures backend to be closer to production, e.g. by sending real emails
+When running the `demo` profile, make sure to provide the email app password.
 
-The `./clean.sh [all]` removes all containers. If the `all` argument is provided, the volumes are also removed.
+```shell 
+export SMTP_PASSWORD="" && docker-compose --profile <deps|dev|demo> -p medtechchain-ums-be up -d --build
+```
 
 ### PGAdmin
 
 If you want to inspect the database and perform queries by hand, access PGAdmin at
-`localhost:10000`. Take the dummy credentials from the `dev-tools/docker-compose.yaml` for
+`localhost:10000`. Take the dummy credentials from the `docker-compose.yaml` for
 authentication and setting up the database connection.
 
 ### smtp4dev
