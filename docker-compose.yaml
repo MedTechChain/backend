@@ -57,7 +57,10 @@ services:
       - smtp4dev_storage:/smtp4dev
 
   medtechchain-backend-dev: &medtechchain-backend-dev
-    image: ${BE_IMAGE_NAME}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: medtechchain/backend
     container_name: medtechchain-backend-dev
     depends_on:
       - postgres
@@ -66,7 +69,7 @@ services:
     environment: &medtechchain-backend-dev-env
       DB_POSTGRES_HOST: postgres
       SMTP_SERVER_HOST: smtp4dev
-      CRYPTO_PATH: /home/user
+      CRYPTO_PATH: /crypto/medtechchain.nl
       CERT_DIR_PATH: ./msp/signcerts
       KEY_DIR_PATH: ./msp/keystore
       TLS_CERT_PATH: ./tls/ca.crt
@@ -79,8 +82,6 @@ services:
       - "8088:8088"
     networks:
       - medtechchain
-    volumes:
-      - ${LOCAL_USER_CRYPTO_PATH}:/home/user
 
   medtechchain-backend:
     <<: *medtechchain-backend-dev
