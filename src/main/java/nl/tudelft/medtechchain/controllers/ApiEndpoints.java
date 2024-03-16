@@ -26,4 +26,10 @@ public class ApiEndpoints {
     public static final String DELETE = "/delete";
     public static final String CHANGE_PASSWORD = "/change_password";
     public static final String QUERIES = "";
+
+    /**
+     * This class should not be instantiated.
+     */
+    private ApiEndpoints() {
+    }
 }

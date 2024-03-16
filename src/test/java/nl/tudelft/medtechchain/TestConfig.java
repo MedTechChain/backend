@@ -31,7 +31,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 public class TestConfig {
 
     /**
-     * Creates a test mock for JavaMailSender object.
+     * Creates a test mock for the JavaMailSender object.
      *
      * @return      the created mock of the JavaMailSender object
      */
@@ -41,7 +41,7 @@ public class TestConfig {
     }
 
     /**
-     * Creates a test mock for Gateway object.
+     * Creates a test mock for the Gateway object.
      *
      * @return      the created mock of the Gateway object
      */

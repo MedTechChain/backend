@@ -3,7 +3,6 @@ package nl.tudelft.medtechchain.services;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import nl.tudelft.medtechchain.models.Researcher;
 import nl.tudelft.medtechchain.models.UserData;
