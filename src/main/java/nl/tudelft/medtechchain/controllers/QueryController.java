@@ -31,7 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
  * <a href="https://github.com/hyperledger/fabric-samples/tree/main/asset-transfer-basic/application-gateway-java">Fabric Samples</a>
  */
 @RestController
-@RequestMapping("/api/queries")
+@RequestMapping(ApiEndpoints.QUERIES_API_PREFIX)
 public class QueryController {
 
     private final ObjectMapper objectMapper;
@@ -53,10 +53,10 @@ public class QueryController {
 
 
         // Get a network instance representing the channel where the smart contract is deployed
-        Network network = gateway.getNetwork(env.getProperty("gateway.channel-name"));
+        Network network = gateway.getNetwork(env.getProperty("gateway.channel-name", ""));
         // Get the smart contract from the network
-        this.contract = network.getContract(env.getProperty("gateway.chaincode-name"),
-                env.getProperty("gateway.smart-contract-name"));
+        this.contract = network.getContract(env.getProperty("gateway.chaincode-name", ""),
+                env.getProperty("gateway.smart-contract-name", ""));
     }
 
     /**
@@ -76,7 +76,7 @@ public class QueryController {
      * @param response          the HTTP response with the JWT that will be sent back
      * @throws IOException      if something goes wrong during the JSON deserialization process
      */
-    @GetMapping
+    @GetMapping(ApiEndpoints.QUERIES)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public void queryChain(HttpServletRequest request,

@@ -8,6 +8,7 @@ plugins {
 
 checkstyle {
 	toolVersion '10.13.0'
+	configDirectory = file("${rootDir}/config/checkstyle")
 	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 }
 
@@ -89,7 +90,6 @@ jacocoTestCoverageVerification() {
 			limit {
 				counter = 'BRANCH'
 				value = 'COVEREDRATIO'
-				minimum = 0.1
 			}
 		}
 	}

@@ -57,11 +57,15 @@ public class GatewayConfig {
      */
     @Bean
     @ConditionalOnProperty(name = "gateway.mock", havingValue = "false")
-    public Gateway gateway(Environment env) throws IOException, CertificateException, InvalidKeyException {
+    public Gateway gateway(Environment env)
+            throws IOException, CertificateException, InvalidKeyException {
         Path cryptoPath = Paths.get(env.getProperty("gateway.crypto-path", ""));
-        Path certDirPath = cryptoPath.resolve(Paths.get(env.getProperty("gateway.cert-dir-path", "")));
-        Path keyDirPath = cryptoPath.resolve(Paths.get(env.getProperty("gateway.key-dir-path", "")));
-        Path tlsCertPath = cryptoPath.resolve(Paths.get(env.getProperty("gateway.tls-cert-path", "")));
+        Path certDirPath = cryptoPath
+                .resolve(Paths.get(env.getProperty("gateway.cert-dir-path", "")));
+        Path keyDirPath = cryptoPath
+                .resolve(Paths.get(env.getProperty("gateway.key-dir-path", "")));
+        Path tlsCertPath = cryptoPath
+                .resolve(Paths.get(env.getProperty("gateway.tls-cert-path", "")));
         String mspId = env.getProperty("gateway.msp-id", "");
         String peerEndpoint = env.getProperty("gateway.peer-endpoint", "");
         String overrideAuth = env.getProperty("gateway.override-auth", "");

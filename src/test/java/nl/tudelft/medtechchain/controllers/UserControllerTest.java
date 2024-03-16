@@ -56,14 +56,6 @@ public class UserControllerTest {
     private static final UUID ADMIN_USER_ID =
             UUID.fromString("87f8304e-4740-45e6-9934-1bce37ac3d1b");
 
-    // API endpoints taken from UserController
-    private static final String LOGIN_API = "/api/users/login";
-    private static final String REGISTER_API = "/api/users/register";
-    private static final String GET_ALL_RESEARCHERS_API = "/api/users/researchers";
-    private static final String UPDATE_API = "/api/users/update";
-    private static final String DELETE_API = "/api/users/delete";
-    private static final String CHANGE_PASSWORD_API = "/api/users/change_password";
-
     private final UUID randomUserId = UUID.fromString("2d38ca54-2bc4-4508-ab60-24d84b9441df");
     private final UserData testResearcher1 = new UserData("jdoe", "password1",
             "J.Doe@tudelft.nl", "John", "Doe", "TU Delft", UserRole.RESEARCHER);
@@ -111,7 +103,7 @@ public class UserControllerTest {
         String jsonRequest = createJson("username", ADMIN_USERNAME, "not_password", "no_password");
 
         this.mockMvc
-                .perform(post(LOGIN_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(post(ApiEndpoints.LOGIN_API).contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isBadRequest());
     }
@@ -121,7 +113,7 @@ public class UserControllerTest {
         String jsonRequest = createJson("username", "the_best_admin", "password", ADMIN_PASSWORD);
 
         this.mockMvc
-                .perform(post(LOGIN_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(post(ApiEndpoints.LOGIN_API).contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isUnauthorized());
     }
@@ -131,7 +123,7 @@ public class UserControllerTest {
         String jsonRequest = createJson("username", ADMIN_USERNAME, "password", "no_password");
 
         this.mockMvc
-                .perform(post(LOGIN_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(post(ApiEndpoints.LOGIN_API).contentType(MediaType.APPLICATION_JSON)
                     .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isUnauthorized());
     }
@@ -141,7 +133,7 @@ public class UserControllerTest {
         String jsonRequest = createJson("username", ADMIN_USERNAME, "password", ADMIN_PASSWORD);
 
         MockHttpServletResponse response = this.mockMvc
-                .perform(post(LOGIN_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(post(ApiEndpoints.LOGIN_API).contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -171,7 +163,7 @@ public class UserControllerTest {
         String jsonRequest = createJson("username", user.getUsername(), "password", "password1");
 
         MockHttpServletResponse response = this.mockMvc
-                .perform(post(LOGIN_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(post(ApiEndpoints.LOGIN_API).contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -201,7 +193,7 @@ public class UserControllerTest {
                 "email", "J.Doe@tudelft.nl", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(post(REGISTER_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(post(ApiEndpoints.REGISTER_API).contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isUnauthorized());
     }
@@ -215,7 +207,7 @@ public class UserControllerTest {
                 "email", "J.Doe-1@tudelft.nl", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(post(REGISTER_API)
+                .perform(post(ApiEndpoints.REGISTER_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
@@ -229,7 +221,7 @@ public class UserControllerTest {
                 "email", "J.Doe-1@tudelft.nl", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(post(REGISTER_API)
+                .perform(post(ApiEndpoints.REGISTER_API)
                         .header(HttpHeaders.AUTHORIZATION, jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
@@ -243,7 +235,7 @@ public class UserControllerTest {
                 "email", "J.Doe-1@tudelft.nl", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(post(REGISTER_API)
+                .perform(post(ApiEndpoints.REGISTER_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
@@ -257,7 +249,7 @@ public class UserControllerTest {
                 "email", "J.Doe[at]tudelft.nl", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(post(REGISTER_API)
+                .perform(post(ApiEndpoints.REGISTER_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
@@ -271,7 +263,7 @@ public class UserControllerTest {
                 "email", "J.Doe@tudelft.nl", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(post(REGISTER_API)
+                .perform(post(ApiEndpoints.REGISTER_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
@@ -287,7 +279,7 @@ public class UserControllerTest {
                 "email", "J.Doe@tudelft.nl", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(post(REGISTER_API)
+                .perform(post(ApiEndpoints.REGISTER_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
@@ -301,7 +293,7 @@ public class UserControllerTest {
                 "email", "J.Doe@tudelft.nl", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(post(REGISTER_API)
+                .perform(post(ApiEndpoints.REGISTER_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
@@ -318,7 +310,7 @@ public class UserControllerTest {
                 .generateJwtToken(user1.getUserId(), UserRole.RESEARCHER, new Date());
 
         this.mockMvc
-                .perform(get(GET_ALL_RESEARCHERS_API)
+                .perform(get(ApiEndpoints.GET_RESEARCHERS_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
                 .andExpect(status().isForbidden());
     }
@@ -328,7 +320,7 @@ public class UserControllerTest {
         String jwt = this.createAdminJwt();
 
         MockHttpServletResponse response = this.mockMvc
-                .perform(get(GET_ALL_RESEARCHERS_API)
+                .perform(get(ApiEndpoints.GET_RESEARCHERS_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -354,7 +346,7 @@ public class UserControllerTest {
         String jwt = this.createAdminJwt();
 
         MockHttpServletResponse response = this.mockMvc
-                .perform(get(GET_ALL_RESEARCHERS_API)
+                .perform(get(ApiEndpoints.GET_RESEARCHERS_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -376,7 +368,7 @@ public class UserControllerTest {
                 "Roe", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(put(UPDATE_API)
+                .perform(put(ApiEndpoints.UPDATE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", user1.getUserId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -391,7 +383,7 @@ public class UserControllerTest {
                 "Roe", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(put(UPDATE_API)
+                .perform(put(ApiEndpoints.UPDATE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", "placeholder")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -406,7 +398,7 @@ public class UserControllerTest {
                 "Roe", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(put(UPDATE_API)
+                .perform(put(ApiEndpoints.UPDATE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", this.randomUserId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -421,7 +413,7 @@ public class UserControllerTest {
                 "Roe", "affiliation", "TU Delft");
 
         this.mockMvc
-                .perform(put(UPDATE_API)
+                .perform(put(ApiEndpoints.UPDATE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", this.randomUserId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -441,7 +433,7 @@ public class UserControllerTest {
                 newLastName, "affiliation", newAffiliation);
 
         this.mockMvc
-                .perform(put(UPDATE_API)
+                .perform(put(ApiEndpoints.UPDATE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -463,7 +455,7 @@ public class UserControllerTest {
                 .generateJwtToken(user1.getUserId(), UserRole.RESEARCHER, new Date());
 
         this.mockMvc
-                .perform(delete(DELETE_API)
+                .perform(delete(ApiEndpoints.DELETE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", user1.getUserId().toString()))
                 .andExpect(status().isForbidden());
@@ -476,7 +468,7 @@ public class UserControllerTest {
         String jwt = this.createAdminJwt();
 
         this.mockMvc
-                .perform(delete(DELETE_API)
+                .perform(delete(ApiEndpoints.DELETE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("userId", userId.toString()))
                 .andExpect(status().isBadRequest());
@@ -487,7 +479,7 @@ public class UserControllerTest {
         String jwt = this.createAdminJwt();
 
         this.mockMvc
-                .perform(delete(DELETE_API)
+                .perform(delete(ApiEndpoints.DELETE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", "placeholder"))
                 .andExpect(status().isBadRequest());
@@ -498,7 +490,7 @@ public class UserControllerTest {
         String jwt = this.createAdminJwt();
 
         this.mockMvc
-                .perform(delete(DELETE_API)
+                .perform(delete(ApiEndpoints.DELETE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", this.randomUserId.toString()))
                 .andExpect(status().isNotFound());
@@ -511,7 +503,7 @@ public class UserControllerTest {
         String jwt = this.createAdminJwt();
 
         this.mockMvc
-                .perform(delete(DELETE_API)
+                .perform(delete(ApiEndpoints.DELETE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", userId.toString()))
                 .andExpect(status().isOk());
@@ -525,7 +517,8 @@ public class UserControllerTest {
                 "password1", "new_password", "password2");
 
         this.mockMvc
-                .perform(put(CHANGE_PASSWORD_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(put(ApiEndpoints.CHANGE_PASSWORD_API)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isUnauthorized());
     }
@@ -536,7 +529,8 @@ public class UserControllerTest {
                 "password1", "newPassword", "password2");
 
         this.mockMvc
-                .perform(put(CHANGE_PASSWORD_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(put(ApiEndpoints.CHANGE_PASSWORD_API)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isBadRequest());
     }
@@ -551,7 +545,8 @@ public class UserControllerTest {
                 "notpassword1", "new_password", "password2");
 
         this.mockMvc
-                .perform(put(CHANGE_PASSWORD_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(put(ApiEndpoints.CHANGE_PASSWORD_API)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isUnauthorized());
 
@@ -569,7 +564,8 @@ public class UserControllerTest {
                 "password1", "new_password", "password2");
 
         this.mockMvc
-                .perform(put(CHANGE_PASSWORD_API).contentType(MediaType.APPLICATION_JSON)
+                .perform(put(ApiEndpoints.CHANGE_PASSWORD_API)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest).characterEncoding("utf-8"))
                 .andExpect(status().isOk());
 
@@ -589,7 +585,7 @@ public class UserControllerTest {
         String jwt = this.jwtProvider.generateJwtToken(ADMIN_USER_ID, UserRole.ADMIN, issueDate);
 
         String responseString = this.mockMvc
-                .perform(delete(DELETE_API)
+                .perform(delete(ApiEndpoints.DELETE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", userId.toString()))
                 .andExpect(status().isUnauthorized())
@@ -602,7 +598,7 @@ public class UserControllerTest {
         String jwt = this.jwtProvider.generateJwtToken(randomUserId, UserRole.ADMIN, new Date());
 
         String responseString = this.mockMvc
-                .perform(delete(DELETE_API)
+                .perform(delete(ApiEndpoints.DELETE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .queryParam("user_id", randomUserId.toString()))
                 .andExpect(status().isUnauthorized())
@@ -613,7 +609,7 @@ public class UserControllerTest {
     @Test
     public void testJwtInvalidJwt() throws Exception {
         String responseString = this.mockMvc
-                .perform(delete(DELETE_API)
+                .perform(delete(ApiEndpoints.DELETE_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer jwt")
                         .queryParam("user_id", randomUserId.toString()))
                 .andExpect(status().isUnauthorized())

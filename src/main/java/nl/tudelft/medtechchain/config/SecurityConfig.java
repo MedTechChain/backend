@@ -2,6 +2,7 @@ package nl.tudelft.medtechchain.config;
 
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
+import nl.tudelft.medtechchain.controllers.ApiEndpoints;
 import nl.tudelft.medtechchain.jwt.JwtAuthenticationFilter;
 import nl.tudelft.medtechchain.jwt.JwtProvider;
 import nl.tudelft.medtechchain.models.UserRole;
@@ -58,26 +59,27 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource(env)))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // For all endpoints except /api/users/login and /api/users/change_password,
-                        //  401 will be returned if the JWT token is missing
-                        //  (see JwtAuthenticationProvider for details)
-                        .requestMatchers(HttpMethod.POST, "/api/users/login")
+                        // For all endpoints except LOGIN and CHANGE_PASSWORD, 401 will be returned
+                        //  if the JWT token is missing (see JwtAuthenticationProvider for details)
+                        .requestMatchers(HttpMethod.POST, ApiEndpoints.LOGIN_API)
                             .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users/register")
+                        .requestMatchers(HttpMethod.POST, ApiEndpoints.REGISTER_API)
                             .hasAuthority(UserRole.ADMIN.name())
-                        .requestMatchers(HttpMethod.GET, "/api/users/researchers")
+                        .requestMatchers(HttpMethod.GET, ApiEndpoints.GET_RESEARCHERS_API)
                             .hasAuthority(UserRole.ADMIN.name())
-                        .requestMatchers(HttpMethod.PUT, "/api/users/update")
+                        .requestMatchers(HttpMethod.PUT, ApiEndpoints.UPDATE_API)
                             .hasAuthority(UserRole.ADMIN.name())
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/delete")
+                        .requestMatchers(HttpMethod.DELETE, ApiEndpoints.DELETE_API)
                             .hasAuthority(UserRole.ADMIN.name())
-                        .requestMatchers(HttpMethod.PUT, "/api/users/change_password")
+                        .requestMatchers(HttpMethod.PUT, ApiEndpoints.CHANGE_PASSWORD_API)
                             .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/queries")
+                        .requestMatchers(HttpMethod.GET, ApiEndpoints.QUERIES_API)
                             .hasAuthority(UserRole.RESEARCHER.name())
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authenticationProvider(this.authenticationProvider())
                 .addFilterBefore(
                         new JwtAuthenticationFilter(this.authenticationService, this.jwtProvider),
@@ -107,7 +109,8 @@ public class SecurityConfig {
      * @throws Exception        if something goes wrong when getting the AuthenticationManager
      */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+            throws Exception {
         return configuration.getAuthenticationManager();
     }
 
@@ -122,11 +125,16 @@ public class SecurityConfig {
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource(Environment env) {
-        String[] allowedOrigins = env.getProperty("spring.graphql.cors.allowed-origins", String[].class, new String[]{});
-        String[] allowedHeaders = env.getProperty("spring.graphql.cors.allowed-headers", String[].class, new String[]{});
-        String[] exposedHeaders = env.getProperty("spring.graphql.cors.exposed-headers", String[].class, new String[]{});
-        String[] allowedMethods = env.getProperty("spring.graphql.cors.allowed-methods", String[].class, new String[]{});
-        Boolean allowCredentials = env.getProperty("spring.graphql.cors.allow-credentials", Boolean.class, false);
+        String[] allowedOrigins = env.getProperty("spring.graphql.cors.allowed-origins",
+                String[].class, new String[]{});
+        String[] allowedHeaders = env.getProperty("spring.graphql.cors.allowed-headers",
+                String[].class, new String[]{});
+        String[] exposedHeaders = env.getProperty("spring.graphql.cors.exposed-headers",
+                String[].class, new String[]{});
+        String[] allowedMethods = env.getProperty("spring.graphql.cors.allowed-methods",
+                String[].class, new String[]{});
+        Boolean allowCredentials = env.getProperty("spring.graphql.cors.allow-credentials",
+                Boolean.class, false);
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));

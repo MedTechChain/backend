@@ -14,13 +14,14 @@ Below is an index for the Java classes together with their purpose. All these cl
 
 `controllers`
 
-- `UserController.java`: A controller class that provides API endpoints for managing users and interacts with the AuthenticationService class. For the full API documentation, see [docs/](docs/). Possible operations are:
+- `ApiEndpoints`: A class that contains all supported API endpoints, so that they can be accessed from all places (for easy reference and modification).
+- `UserController.java`: A controller class that provides API endpoints for managing users and interacts with the AuthenticationService class. For the full API documentation, see [docs/](docs/) directory. Possible operations are:
   - **POST** `/api/users/login` (accessible for all)
   - **POST** `/api/users/register` (accessible only for admin)
   - **GET** `/api/users/researchers` (accessible only for admin)
   - **PUT** `/api/users/update` (accessible only for admin)
   - **DELETE** `/api/users/delete` (accessible only for admin)
-- `QueryController.java`: A controller class that gets queries from researchers, sends them to the blockchain and returns the result. For the full API documentation, see [docs/](docs/). Possible operations are:
+- `QueryController.java`: A controller class that gets queries from researchers, sends them to the blockchain and returns the result. For the full API documentation, see [docs/](docs/) directory. Possible operations are:
     - **GET** `/api/queries` (accessible only for researchers)
 
 `jwt`

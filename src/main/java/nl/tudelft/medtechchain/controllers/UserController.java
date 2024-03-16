@@ -40,7 +40,7 @@ import org.springframework.web.server.ResponseStatusException;
  *  and interacts with the AuthenticationService class.
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(ApiEndpoints.USERS_API_PREFIX)
 @RequiredArgsConstructor
 public class UserController {
     private final AuthenticationManager authenticationManager;
@@ -75,10 +75,10 @@ public class UserController {
      * @param response          the HTTP response with the JWT that will be sent back
      * @throws IOException      if something goes wrong during the JSON deserialization process
      */
-    @PostMapping("/login")
+    @PostMapping(ApiEndpoints.LOGIN)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void logIn(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
         this.checkJsonFields(jsonNode, "username", "password");
 
@@ -107,7 +107,7 @@ public class UserController {
      * @param request           the HTTP request with the JWT and the data about the new user
      * @throws IOException      if something goes wrong during the JSON deserialization process
      */
-    @PostMapping("/register")
+    @PostMapping(ApiEndpoints.REGISTER)
     @ResponseStatus(HttpStatus.CREATED)
     public void registerNewUser(HttpServletRequest request) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
@@ -131,7 +131,7 @@ public class UserController {
      * @param response          the HTTP response with the found researchers that will be sent back
      * @throws IOException      if something goes wrong during the JSON deserialization process
      */
-    @GetMapping("/researchers")
+    @GetMapping(ApiEndpoints.GET_RESEARCHERS)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public void getAllResearchers(HttpServletResponse response)
@@ -157,9 +157,9 @@ public class UserController {
      * @param request           the HTTP request with the JWT and the data about the user
      * @throws IOException      if something goes wrong during the JSON deserialization process
      */
-    @PutMapping("/update")
+    @PutMapping(ApiEndpoints.UPDATE)
     @ResponseStatus(HttpStatus.OK)
-    public void changePersonalDetails(HttpServletRequest request) throws IOException {
+    public void updatePersonalDetails(HttpServletRequest request) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
         this.checkJsonFields(jsonNode, "first_name", "last_name", "affiliation");
 
@@ -184,7 +184,7 @@ public class UserController {
      *
      * @param request           the HTTP request with the JWT and the userID of the user
      */
-    @DeleteMapping("/delete")
+    @DeleteMapping(ApiEndpoints.DELETE)
     @ResponseStatus(HttpStatus.OK)
     public void deleteUser(HttpServletRequest request) {
         UUID userId;
@@ -207,7 +207,7 @@ public class UserController {
      * @param request           the HTTP request with the username and old and new passwords
      * @throws IOException      if something goes wrong during the JSON deserialization process
      */
-    @PutMapping("/change_password")
+    @PutMapping(ApiEndpoints.CHANGE_PASSWORD)
     @ResponseStatus(HttpStatus.OK)
     public void changePassword(HttpServletRequest request) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
