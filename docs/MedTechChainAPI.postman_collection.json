@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "618314ae-b487-4d3c-8f1b-c79b6e7ec782",
 		"name": "MedTech Chain Documentation",
-		"description": "Backend API for the User Management Server",
+		"description": "Backend API for the User Management Server.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "18550693"
 	},
@@ -268,48 +268,6 @@
 							"body": "[ {\n  \"user_id\" : \"8eeda5c8-8a4c-47de-bdac-880e8c69c233\",\n  \"first_name\" : \"John\",\n  \"last_name\" : \"Doe\",\n  \"email\" : \"J.Doe@tudelft.nl\",\n  \"affiliation\" : \"Delft University of Technology\"\n}, {\n  \"user_id\" : \"0abe1518-07a1-4782-a2fa-af4a5a2adf6b\",\n  \"first_name\" : \"Jane\",\n  \"last_name\" : \"Doe\",\n  \"email\" : \"J.Doe-1@tudelft.nl\",\n  \"affiliation\" : \"Delft University of Technology\"\n} ]"
 						}
 					]
-				},
-				{
-					"name": "Get Filtered Researchers",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk",
-								"description": "JWT",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:8088/api/users/researchers?first_name=John&last_name=Doe&affiliation=Delft University of Technology",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8088",
-							"path": [
-								"api",
-								"users",
-								"researchers"
-							],
-							"query": [
-								{
-									"key": "first_name",
-									"value": "John"
-								},
-								{
-									"key": "last_name",
-									"value": "Doe"
-								},
-								{
-									"key": "affiliation",
-									"value": "Delft University of Technology"
-								}
-							]
-						}
-					},
-					"response": []
 				},
 				{
 					"name": "Update Personal Details",
@@ -631,7 +589,8 @@
 								"users",
 								"login"
 							]
-						}
+						},
+						"description": "After a successful login attempt, the server sends back a JWT with the specified expiration time (in minutes)."
 					},
 					"response": [
 						{
@@ -730,7 +689,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n    \"jwt\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3NTlhYTIwYy0zMTA2LTRhYzgtODNjNi02MjQzMGUzMTYxNDkiLCJyb2xlIjoiUkVTRUFSQ0hFUiIsImlhdCI6MTcwODkyNTAxMywiZXhwIjoxNzA4OTI4NjEzfQ.QiEpuZOzpUHE8bKWJ35nIqTjSw835pa-7HPgSl-HUJI\",\n    \"token_type\": \"JWT\",\n    \"expires_in\": 60\n}"
+							"body": "{\n    \"jwt\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3NTlhYTIwYy0zMTA2LTRhYzgtODNjNi02MjQzMGUzMTYxNDkiLCJyb2xlIjoiUkVTRUFSQ0hFUiIsImlhdCI6MTcwODkyNTAxMywiZXhwIjoxNzA4OTI4NjEzfQ.QiEpuZOzpUHE8bKWJ35nIqTjSw835pa-7HPgSl-HUJI\",\n    \"token_type\": \"JWT\",\n    \"expires_in\": 15\n}"
 						}
 					]
 				},

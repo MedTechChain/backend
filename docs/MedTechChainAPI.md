@@ -99,37 +99,6 @@ curl --location 'http://localhost:8088/api/users/researchers' \
 
 ---
 
-### Get Filtered Researchers
-
-`GET http://localhost:8088/api/users/researchers?first_name=John&last_name=Doe&affiliation=Delft%20University%20of%20Technology`
-
-#### Request Headers
-
-| Header        | Value                                                                                                                                   |
-|---------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| Authorization | Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk |
-
-#### Query Parameters
-
-| Parameter   | Value                          |
-|-------------|--------------------------------|
-| first_name  | John                           |
-| last_name   | Doe                            |
-| affiliation | Delft University of Technology |
-
-
-#### Example
-
-##### Request
-
-*To be added*
-
-##### Response
-
-*To be added*
-
----
-
 ### Update Personal Details
 
 `PUT http://localhost:8088/api/users/update?user_id=8eeda5c8-8a4c-47de-bdac-880e8c69c233`
@@ -214,6 +183,7 @@ This request does not return any response body.
 
 ---
 
+
 ## Researcher
 
 A researcher can only log in, change their password and query the chain.
@@ -222,6 +192,8 @@ A researcher can only log in, change their password and query the chain.
 ### Log In
 
 `POST http://localhost:8088/api/users/login`
+
+After a successful login attempt, the server sends back a JWT with the specified expiration time (in minutes).
 
 #### Request Headers
 
@@ -259,7 +231,7 @@ curl --location 'http://localhost:8088/api/users/login' \
 {
     "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3NTlhYTIwYy0zMTA2LTRhYzgtODNjNi02MjQzMGUzMTYxNDkiLCJyb2xlIjoiUkVTRUFSQ0hFUiIsImlhdCI6MTcwODkyNTAxMywiZXhwIjoxNzA4OTI4NjEzfQ.QiEpuZOzpUHE8bKWJ35nIqTjSw835pa-7HPgSl-HUJI",
     "token_type": "JWT",
-    "expires_in": 60
+    "expires_in": 15
 }
 ```
 

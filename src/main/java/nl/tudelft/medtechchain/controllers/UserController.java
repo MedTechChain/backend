@@ -128,14 +128,13 @@ public class UserController {
      *  (Spring Security performs the actual authorization check in AuthorizationFilter).
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
-     * @param request           the HTTP request with the JWT and the data about the new user
      * @param response          the HTTP response with the found researchers that will be sent back
      * @throws IOException      if something goes wrong during the JSON deserialization process
      */
     @GetMapping("/researchers")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void getAllResearchers(HttpServletRequest request, HttpServletResponse response)
+    public void getAllResearchers(HttpServletResponse response)
             throws IOException {
         List<Researcher> researchers = this.authenticationService.getAllResearchers();
         String responseBody = this.objectMapper
