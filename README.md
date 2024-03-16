@@ -18,7 +18,7 @@ See [build.gradle](build.gradle) file for all dependencies.
 Before running the service (IDE or Docker), make sure to copy the crypto
 material required for the integration with Fabric infrastructure.
 
-Use the `scripts/load-crypto.sh` script to automatically copy the crypto material.
+Use the `scripts/copy-crypto.sh` script to automatically copy the crypto material.
 
 ### Command Line
 

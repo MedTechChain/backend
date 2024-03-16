@@ -11,11 +11,12 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import lombok.AllArgsConstructor;
 import nl.tudelft.medtechchain.models.Researcher;
 import nl.tudelft.medtechchain.models.UserData;
 import nl.tudelft.medtechchain.models.UserRole;
+import nl.tudelft.medtechchain.models.email.CredentialsEmail;
 import nl.tudelft.medtechchain.repositories.UserDataRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,7 +30,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Transactional
-@AllArgsConstructor
 public class AuthenticationService implements UserDetailsService {
 
     private final UserDataRepository userDataRepository;
@@ -37,6 +37,23 @@ public class AuthenticationService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
     private final EmailService emailService;
+
+    @Value("${password.length}")
+    private long passwordLength;
+
+    /**
+     * Creates an AuthenticationService object.
+     *
+     * @param userDataRepository            the repository with the user data
+     * @param passwordEncoder               the password encoder to encrypt passwords
+     * @param emailService                  the email service to send emails
+     */
+    public AuthenticationService(UserDataRepository userDataRepository,
+                                 PasswordEncoder passwordEncoder, EmailService emailService) {
+        this.userDataRepository = userDataRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
 
     /**
      * Retrieves the user with the given username.
@@ -121,15 +138,16 @@ public class AuthenticationService implements UserDetailsService {
 
 
     /**
-     * Generates a random 128-ASCII-character password to log in.
+     * Generates a random password for the user to log in.
+     * The password consists of the specified number of ASCII characters (`passwordLength` field).
      * The password will be sent to the user by email.
      * The idea has been taken from <a href="https://www.baeldung.com/java-generate-secure-password#using-custom-utility">Baeldung</a>
      *
-     * @return                              the generated password (128 ASCII characters)
+     * @return                              the generated ASCII-character password
      */
     private String generatePassword() {
         Random random = new SecureRandom();
-        IntStream randomAsciiCodes = random.ints(128, 33, 127);
+        IntStream randomAsciiCodes = random.ints(this.passwordLength, 33, 127);
         return randomAsciiCodes
                 .mapToObj(code -> String.valueOf((char) code))
                 .collect(Collectors.joining());
@@ -165,14 +183,11 @@ public class AuthenticationService implements UserDetailsService {
                 firstName, lastName, affiliation, UserRole.RESEARCHER);
         this.userDataRepository.save(newUser);
 
-        // TODO: replace with some sort of template
-        String emailContent = String.format("Dear %s,\n\n", firstName)
-                + "You have been registered in MedTech Chain. Your default credentials are:\n\n"
-                + String.format("\tUsername: %s\n\tPassword: %s\n\n", username, password)
-                + "Make sure to change your password, and don't forget to make it secure.\n"
-                + "Suggestion: you can also use a password manager.\n\n"
-                + "Best regards,\nMedTech Chain";
-        this.emailService.sendSimpleEmail(email, "Welcome to MedTech Chain", emailContent);
+        String subject = "Welcome to MedTech Chain";
+        String name = String.format("%s %s", firstName, lastName);
+        CredentialsEmail emailObj = new CredentialsEmail(email, subject, name, username, password);
+        this.emailService.sendEmail(emailObj);
+
         return newUser;
     }
 

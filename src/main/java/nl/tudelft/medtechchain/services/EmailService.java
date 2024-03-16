@@ -1,34 +1,55 @@
 package nl.tudelft.medtechchain.services;
 
-import lombok.AllArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
+import nl.tudelft.medtechchain.models.email.EmailData;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
 
 /**
  * A service class used to send emails.
  * E.g. when registering a user, their credentials are sent to them by email.
  */
 @Service
-@AllArgsConstructor
 public class EmailService {
 
-    private JavaMailSender mailSender;
+    @Value("${spring.mail.username}")
+    private String from;
+
+    private final JavaMailSender mailSender;
+
+    private final TemplateEngine templateEngine;
 
     /**
-     * Sends an email to the specified email address, with the specified subject and content.
+     * Creates an EmailService object. The sender email address is defined by the `from` field.
      *
-     * @param to            the recipient of the email
-     * @param subject       the subject of the email
-     * @param text          the content of the email
+     * @param mailSender        mail sender that is used to send emails
+     * @param templateEngine    template engine to inject fields into Thymeleaf HTML templates
      */
-    public void sendSimpleEmail(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("noreply.healthblocks@gmail.com");
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
+    public EmailService(JavaMailSender mailSender, TemplateEngine templateEngine) {
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+    }
 
-        this.mailSender.send(message);
+    /**
+     * Sends an email to the specified email address, with the specified subject and content
+     *  (created by Thymeleaf based on the HTML template).
+     *
+     * @param emailData         the data relevant for the email (subject, recipient, content etc.)
+     */
+    @Async
+    public void sendEmail(EmailData emailData) {
+        MimeMessagePreparator messagePreparation = mimeMessage -> {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
+            messageHelper.setFrom(from);
+            messageHelper.setTo(emailData.getTo());
+            messageHelper.setSubject(emailData.getSubject());
+            String text = templateEngine.process(emailData.getTemplate(), emailData.getContext());
+            messageHelper.setText(text, true);
+        };
+        this.mailSender.send(messagePreparation);
     }
 }

@@ -31,7 +31,9 @@ Below is an index for the Java classes together with their purpose. All these cl
 - `JwtSecretKey.java`: A configuration class for creating the JWT key.
 
 `models`
-
+- `email`
+  - `EmailData`: An abstract class that stores the basic email data (recipient, subject and template) and is used to store the data common for all email types (i.e. child classes).
+  - `CredentialsEmail`: A class that stores the data necessary to send an email with the credentials when registering a new user.
 - `Researcher.java`: A DTO class for a researcher that will be sent when researchers have been requested.
 - `UserData.java`: A class that is used to store the user data (userID, username, password, email, first name, last name, affiliation etc.).
 - `UserRole.java`: An enum class used to represent different user roles (currently "Admin" and "Researcher"), used for authorization checks when accessing endpoints. A new user is registered as researcher and this role cannot be changed. There is only one admin.
