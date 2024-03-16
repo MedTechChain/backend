@@ -1,6 +1,6 @@
 package nl.tudelft.medtechchain.config;
 
-import java.util.List;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import nl.tudelft.medtechchain.jwt.JwtAuthenticationFilter;
 import nl.tudelft.medtechchain.jwt.JwtProvider;
@@ -8,6 +8,7 @@ import nl.tudelft.medtechchain.models.UserRole;
 import nl.tudelft.medtechchain.services.AuthenticationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -47,13 +48,14 @@ public class SecurityConfig {
      * Other configurations are also applied (such as CORS, CSRF and session management).
      *
      * @param http              allows configuring Web-based security for HTTP requests
+     * @param env               the Spring environment (to access the defined properties)
      * @return                  the created and configured SecurityFilterChain
      * @throws Exception        if something goes wrong during the SecurityFilterChain building
      */
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, Environment env) throws Exception {
         return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource(env)))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // For all endpoints except /api/users/login and /api/users/change_password,
@@ -69,15 +71,13 @@ public class SecurityConfig {
                             .hasAuthority(UserRole.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "/api/users/delete")
                             .hasAuthority(UserRole.ADMIN.name())
-                        .requestMatchers(HttpMethod.GET, "/api/queries")
-                            .hasAuthority(UserRole.RESEARCHER.name())
                         .requestMatchers(HttpMethod.PUT, "/api/users/change_password")
                             .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/queries")
+                            .hasAuthority(UserRole.RESEARCHER.name())
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(this.authenticationProvider())
                 .addFilterBefore(
                         new JwtAuthenticationFilter(this.authenticationService, this.jwtProvider),
@@ -107,8 +107,7 @@ public class SecurityConfig {
      * @throws Exception        if something goes wrong when getting the AuthenticationManager
      */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
-            throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
@@ -116,20 +115,28 @@ public class SecurityConfig {
      * Creates the CorsConfigurationSource bean, used in the Spring framework.
      * CORS (Cross-Origin Resource Sharing) lets us specify what kind of cross-domain
      *  requests are authorized (see: <a href="https://docs.spring.io/spring-framework/reference/web/webflux-cors.html#webflux-cors-intro">CORS</a>).
+     * The configuration properties are taken from the application.properties file.
      *
+     * @param env               the Spring environment (to access the defined properties)
      * @return                  the created and configured CorsConfigurationSource bean
      */
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        // TODO: Take origin from configuration
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-        configuration.setAllowCredentials(true);
+    public CorsConfigurationSource corsConfigurationSource(Environment env) {
+        String[] allowedOrigins = env.getProperty("spring.graphql.cors.allowed-origins", String[].class, new String[]{});
+        String[] allowedHeaders = env.getProperty("spring.graphql.cors.allowed-headers", String[].class, new String[]{});
+        String[] exposedHeaders = env.getProperty("spring.graphql.cors.exposed-headers", String[].class, new String[]{});
+        String[] allowedMethods = env.getProperty("spring.graphql.cors.allowed-methods", String[].class, new String[]{});
+        Boolean allowCredentials = env.getProperty("spring.graphql.cors.allow-credentials", Boolean.class, false);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        configuration.setAllowedHeaders(Arrays.asList(allowedHeaders));
+        configuration.setExposedHeaders(Arrays.asList(exposedHeaders));
+        configuration.setAllowedMethods(Arrays.asList(allowedMethods));
+        configuration.setAllowCredentials(allowCredentials);
+
         // Apply CORS configuration to all paths
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }

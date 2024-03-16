@@ -13,7 +13,6 @@ import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.hyperledger.fabric.client.Gateway;
@@ -45,6 +44,7 @@ public class GatewayConfig {
      *    2. Client identity used to transact with the network
      *    3. Signing implementation used to generate digital signatures for the client identity
      * See <a href="https://hyperledger-fabric.readthedocs.io/en/latest/write_first_app.html">Running a Fabric Application</a>.
+     * The configuration properties are taken from the application.properties file.
      *
      * @param env                       the Spring environment (to access the defined properties)
      * @return                          the created Gateway bean, based on the configuration
@@ -57,20 +57,14 @@ public class GatewayConfig {
      */
     @Bean
     @ConditionalOnProperty(name = "gateway.mock", havingValue = "false")
-    public Gateway gateway(Environment env)
-            throws IOException, CertificateException, InvalidKeyException {
-        // Read environment properties
-        Path cryptoPath = Paths.get(Objects
-                .requireNonNull(env.getProperty("gateway.crypto-path")));
-        Path certDirPath = cryptoPath.resolve(Paths.get(Objects
-                .requireNonNull(env.getProperty("gateway.cert-dir-path"))));
-        Path keyDirPath = cryptoPath.resolve(Paths.get(Objects
-                .requireNonNull(env.getProperty("gateway.key-dir-path"))));
-        Path tlsCertPath = cryptoPath.resolve(Paths.get(Objects
-                .requireNonNull(env.getProperty("gateway.tls-cert-path"))));
-        String mspId = env.getProperty("gateway.msp-id");
-        String peerEndpoint = env.getProperty("gateway.peer-endpoint");
-        String overrideAuth = env.getProperty("gateway.override-auth");
+    public Gateway gateway(Environment env) throws IOException, CertificateException, InvalidKeyException {
+        Path cryptoPath = Paths.get(env.getProperty("gateway.crypto-path", ""));
+        Path certDirPath = cryptoPath.resolve(Paths.get(env.getProperty("gateway.cert-dir-path", "")));
+        Path keyDirPath = cryptoPath.resolve(Paths.get(env.getProperty("gateway.key-dir-path", "")));
+        Path tlsCertPath = cryptoPath.resolve(Paths.get(env.getProperty("gateway.tls-cert-path", "")));
+        String mspId = env.getProperty("gateway.msp-id", "");
+        String peerEndpoint = env.getProperty("gateway.peer-endpoint", "");
+        String overrideAuth = env.getProperty("gateway.override-auth", "");
 
         // The gRPC client connection should be shared by all Gateway connections to this endpoint
         ManagedChannel channel = newGrpcConnection(tlsCertPath, peerEndpoint, overrideAuth);
