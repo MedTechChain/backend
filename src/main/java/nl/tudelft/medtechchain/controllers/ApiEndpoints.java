@@ -1,5 +1,7 @@
 package nl.tudelft.medtechchain.controllers;
 
+import java.util.Set;
+
 /**
  * A class that contains all supported API endpoints, so that they can be accessed from all places
  *  (for easy reference and modification).
@@ -26,6 +28,10 @@ public class ApiEndpoints {
     public static final String DELETE = "/delete";
     public static final String CHANGE_PASSWORD = "/change_password";
     public static final String QUERIES = "";
+
+    // Paths that do not require JWT. For parts that are not in this list,
+    //  401 Unauthorized will be returned if the JWT is missing.
+    public static Set<String> NO_JWT_PATHS = Set.of(LOGIN_API, CHANGE_PASSWORD_API);
 
     /**
      * This class should not be instantiated.

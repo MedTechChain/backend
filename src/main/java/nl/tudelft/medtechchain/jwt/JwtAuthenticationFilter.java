@@ -8,10 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
+import nl.tudelft.medtechchain.controllers.ApiEndpoints;
 import nl.tudelft.medtechchain.services.AuthenticationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,8 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AuthenticationService authenticationService;
 
     private final JwtProvider jwtProvider;
-
-    private final Set<String> noJwtPaths = Set.of("/api/users/login", "/api/users/change_password");
 
     /**
      * Performs the authentication step using a JWT (if present).
@@ -53,9 +51,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         Optional<String> resolvedJwt = this.jwtProvider.getJwtFromHeader(request);
         if (resolvedJwt.isEmpty()) {
-            // Only /api/users/login endpoint can be accessed without JWT
-            // If another endpoint is accessed without JWT, then 401 status code is returned
-            if (this.noJwtPaths.contains(request.getRequestURI())) {
+            // Only LOGIN and CHANGE_PASSWORD endpoints can be accessed without JWT
+            // If any other endpoint is accessed without JWT, then 401 status code is returned
+            if (ApiEndpoints.NO_JWT_PATHS.contains(request.getRequestURI())) {
                 filterChain.doFilter(request, response);
             } else {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());

@@ -54,7 +54,8 @@ public class SecurityConfig {
      * @throws Exception        if something goes wrong during the SecurityFilterChain building
      */
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, Environment env) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   Environment env) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource(env)))
                 .csrf(AbstractHttpConfigurer::disable)
