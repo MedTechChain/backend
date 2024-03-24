@@ -81,8 +81,11 @@ public class QueryController {
     @ResponseBody
     public void queryChain(HttpServletRequest request,
                            HttpServletResponse response) throws IOException, GatewayException {
-        // TODO: create a more general API
-        String version = request.getParameter("version");  // e.g. v0.0.1
+        // QueryType queryType = QueryType.valueOf(request.getParameter("query_type"));
+        // DeviceType deviceType = DeviceType.valueOf(request.getParameter("device_type"));
+        // String query = request.getParameter("query");
+        // String value = request.getParameter("value");
+        String version = request.getParameter("version");
         if (version == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
