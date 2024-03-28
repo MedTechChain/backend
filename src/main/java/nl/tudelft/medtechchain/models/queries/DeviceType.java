@@ -5,18 +5,11 @@ package nl.tudelft.medtechchain.models.queries;
  * Currently, only the types "bedside_monitor", "wearable_device" and "both" are supported.
  */
 public enum DeviceType {
-    BEDSIDE_MONITOR("bedside_monitor"),
-    WEARABLE_DEVICE("wearable_device"),
-    BOTH("both");
-
-    private final String name;
-
-    DeviceType(String name) {
-        this.name = name;
-    }
+    BEDSIDE_MONITOR,
+    WEARABLE_DEVICE;
 
     @Override
     public String toString() {
-        return this.name;
+        return this.name().toLowerCase();
     }
 }

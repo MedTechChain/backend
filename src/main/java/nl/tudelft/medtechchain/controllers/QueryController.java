@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import nl.tudelft.medtechchain.models.queries.DeviceType;
+import nl.tudelft.medtechchain.models.queries.QueryType;
 import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
 import org.hyperledger.fabric.client.GatewayException;
@@ -70,7 +72,11 @@ public class QueryController {
     }
 
     /**
-     * Sends a query (written by a researcher or the admin) to the chain.
+     * Sends a query (written by a researcher) to the blockchain.
+     * <p></p>
+     * COUNT wearable|bedside_monitor field_name=value;
+     * AVERAGE wearable|bedside_monitor field_name;
+     * HISTOGRAM wearable|bedside_monitor field_name;
      *
      * @param request           the received HTTP request
      * @param response          the HTTP response with the JWT that will be sent back
@@ -81,37 +87,50 @@ public class QueryController {
     @ResponseBody
     public void queryChain(HttpServletRequest request,
                            HttpServletResponse response) throws IOException, GatewayException {
-        // QueryType queryType = QueryType.valueOf(request.getParameter("query_type"));
-        // DeviceType deviceType = DeviceType.valueOf(request.getParameter("device_type"));
-        // String query = request.getParameter("query");
-        // String value = request.getParameter("value");
-        String version = request.getParameter("version");
-        if (version == null) {
+        QueryType queryType;
+        DeviceType deviceType;
+        String queryField;
+        String queryValue;
+        try {
+            queryType = QueryType.valueOf(request.getParameter("query_type").toUpperCase());
+            deviceType = DeviceType.valueOf(request.getParameter("device_type").toUpperCase());
+            queryField = request.getParameter("query_field");
+            queryValue = request.getParameter("query_value");
+            if (queryField == null) {
+                throw new IllegalArgumentException();
+            }
+        } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
+        // TODO: update later
+        String query = queryType.name().toUpperCase() + deviceType.name() + queryField;
+        if (queryValue != null) {
+            query = query + "=" + queryValue;
+        }
+        query = query + ";";
+
         // Return all the current assets on the ledger.
-        int result = Integer.parseInt(this.getAllAssets(version));
+        int result = Integer.parseInt(this.runQuery(query));
 
         // Query the chain
-        String responseBody = this.objectMapper.createObjectNode().put("count", result).toString();
+        String responseBody = this.objectMapper.createObjectNode().put("result", result).toString();
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(responseBody);
     }
 
     /**
-     * Evaluates a transaction to query ledger state.
-     * The transaction (CountFirmwareVersionGreaterEqualThan) returns the number of devices with
-     *  firmware version greater than or equal to the specified version.
+     * Evaluates a transaction to run a query on the blockchain.
      *
      * @throws GatewayException             if something goes wrong during transaction evaluation
      * @throws JsonProcessingException      if something goes wrong during JSON reading
      */
-    private String getAllAssets(String version) throws GatewayException, JsonProcessingException {
+    private String runQuery(String version) throws GatewayException, JsonProcessingException {
         System.out.println("\n--> Evaluate Transaction: CountFirmwareVersionGreaterEqualThan,"
                 + "function returns the number of devices with firmware version greater than or"
                 + "equal to the specified version");
 
+        // TODO: update to the query
         byte[] resultInBytes = this.contract
                 .evaluateTransaction("CountFirmwareVersionGreaterEqualThan", version);
         String result = new String(resultInBytes, StandardCharsets.UTF_8);

@@ -5,17 +5,12 @@ package nl.tudelft.medtechchain.models.queries;
  * Currently, only the types "count" and "average" are supported.
  */
 public enum QueryType {
-    COUNT("count"),
-    AVERAGE("average");
-
-    private final String name;
-
-    QueryType(String name) {
-        this.name = name;
-    }
+    COUNT,
+    AVERAGE,
+    HISTOGRAM;
 
     @Override
     public String toString() {
-        return this.name;
+        return this.name().toLowerCase();
     }
 }

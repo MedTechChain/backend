@@ -6,17 +6,11 @@ package nl.tudelft.medtechchain.models;
  * Currently, it only has "researcher" and "admin" roles.
  */
 public enum UserRole {
-    ADMIN("admin"),
-    RESEARCHER("researcher");
-
-    private final String name;
-
-    UserRole(String name) {
-        this.name = name;
-    }
+    ADMIN,
+    RESEARCHER;
 
     @Override
     public String toString() {
-        return this.name;
+        return this.name().toLowerCase();
     }
 }

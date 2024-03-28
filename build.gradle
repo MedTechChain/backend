@@ -27,6 +27,9 @@ configurations {
 
 repositories {
 	mavenCentral()
+	flatDir {
+		dirs 'libs'
+	}
 }
 
 dependencies {
@@ -60,6 +63,10 @@ dependencies {
 	implementation 'org.hyperledger.fabric:fabric-gateway:1.4.0'
 	compileOnly 'io.grpc:grpc-api:1.59.0'
 	implementation 'io.grpc:grpc-netty-shaded:1.59.0'
+
+	// Profobuf
+	//implementation ':medtechchain.protos:0.0.1'
+	//testImplementation ':medtechchain.protos:0.0.1'
 
 	// Testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

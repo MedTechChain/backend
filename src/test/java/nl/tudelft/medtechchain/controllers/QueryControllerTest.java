@@ -13,6 +13,8 @@ import nl.tudelft.medtechchain.jwt.JwtProvider;
 import nl.tudelft.medtechchain.models.Researcher;
 import nl.tudelft.medtechchain.models.UserData;
 import nl.tudelft.medtechchain.models.UserRole;
+import nl.tudelft.medtechchain.models.queries.DeviceType;
+import nl.tudelft.medtechchain.models.queries.QueryType;
 import nl.tudelft.medtechchain.repositories.UserDataRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +44,14 @@ public class QueryControllerTest {
 
     public static final String QUERIES_API = "/api/queries";
 
+    public static final String QUERY_TYPE_PARAM = "query_type";
+    public static final String DEVICE_TYPE_PARAM = "device_type";
+    public static final String QUERY_FIELD_PARAM = "query_field";
+    public static final String QUERY_VALUE_PARAM = "query_value";
+
+    private static final UUID ADMIN_USER_ID =
+            UUID.fromString("87f8304e-4740-45e6-9934-1bce37ac3d1b");
+
     private final UserData testResearcher = new UserData("jdoe", "password1",
             "J.Doe@tudelft.nl", "John", "Doe", "TU Delft", UserRole.RESEARCHER);
 
@@ -57,27 +67,56 @@ public class QueryControllerTest {
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    public void testQueryChainBadRequest() throws Exception {
+    public void testQueryChainNonExistentFields() throws Exception {
         // NB! The mocks are defined in GatewayConfig
         UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
         String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
 
         this.mockMvc.perform(get(QUERIES_API)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .queryParam("v", "v0.0.1"))
+                        .queryParam("query", "query"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    public void testQueryChainSuccessful() throws Exception {
-        // NB! The mocks are defined in GatewayConfig
+    public void testQueryChainNotAllowed() throws Exception {
+        UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
+        String jwt = this.jwtProvider.generateJwtToken(ADMIN_USER_ID, UserRole.ADMIN, new Date());
+
+        this.mockMvc.perform(get(QUERIES_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .queryParam(QUERY_TYPE_PARAM, QueryType.COUNT.toString())
+                        .queryParam(DEVICE_TYPE_PARAM, DeviceType.WEARABLE_DEVICE.toString())
+                        .queryParam(QUERY_FIELD_PARAM, "has_value_equals")
+                        .queryParam(QUERY_VALUE_PARAM, "5"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    public void testQueryChainMissingFields() throws Exception {
+        UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
+        String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
+
+        this.mockMvc.perform(get(QUERIES_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .queryParam(QUERY_TYPE_PARAM, QueryType.AVERAGE.name())
+                        .queryParam(DEVICE_TYPE_PARAM, DeviceType.BEDSIDE_MONITOR.name()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    public void testQueryChainNoValue() throws Exception {
         UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
         String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
 
         MockHttpServletResponse response = this.mockMvc.perform(get(QUERIES_API)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                .queryParam("version", "v0.0.1"))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .queryParam(QUERY_TYPE_PARAM, QueryType.COUNT.name())
+                        .queryParam(DEVICE_TYPE_PARAM, DeviceType.BEDSIDE_MONITOR.name())
+                        .queryParam(QUERY_FIELD_PARAM, "has_value_equals"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         Assertions.assertThat(response.getHeader(HttpHeaders.CONTENT_TYPE))
@@ -85,9 +124,34 @@ public class QueryControllerTest {
 
         String jsonResult = response.getContentAsString();
         JsonNode jsonNode = new ObjectMapper().readTree(jsonResult);
-        Assertions.assertThat(jsonNode.has("count")).isTrue();
+        Assertions.assertThat(jsonNode.has("result")).isTrue();
 
-        int result = Integer.parseInt(jsonNode.get("count").asText());
+        int result = Integer.parseInt(jsonNode.get("result").asText());
+        Assertions.assertThat(result).isEqualTo(5);
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    public void testQueryChainSuccessful() throws Exception {
+        UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
+        String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
+
+        MockHttpServletResponse response = this.mockMvc.perform(get(QUERIES_API)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .queryParam(QUERY_TYPE_PARAM, QueryType.HISTOGRAM.name())
+                        .queryParam(DEVICE_TYPE_PARAM, DeviceType.BEDSIDE_MONITOR.name())
+                        .queryParam(QUERY_FIELD_PARAM, "has_value_equals")
+                        .queryParam(QUERY_VALUE_PARAM, "5"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        Assertions.assertThat(response.getHeader(HttpHeaders.CONTENT_TYPE))
+                .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
+        String jsonResult = response.getContentAsString();
+        JsonNode jsonNode = new ObjectMapper().readTree(jsonResult);
+        Assertions.assertThat(jsonNode.has("result")).isTrue();
+
+        int result = Integer.parseInt(jsonNode.get("result").asText());
         Assertions.assertThat(result).isEqualTo(5);
     }
 }
