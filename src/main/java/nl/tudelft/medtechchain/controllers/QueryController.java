@@ -2,13 +2,13 @@ package nl.tudelft.medtechchain.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.annotation.PreDestroy;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import nl.tudelft.medtechchain.models.queries.DeviceType;
-import nl.tudelft.medtechchain.models.queries.QueryType;
+import nl.medtechchain.protos.query.Query;
+import nl.tudelft.medtechchain.protoutils.JsonToProtobufDeserializer;
 import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
 import org.hyperledger.fabric.client.GatewayException;
@@ -17,12 +17,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 
 /**
@@ -53,7 +53,6 @@ public class QueryController {
         this.gateway = gateway;
         this.objectMapper = objectMapper;
 
-
         // Get a network instance representing the channel where the smart contract is deployed
         Network network = gateway.getNetwork(env.getProperty("gateway.channel-name", ""));
         // Get the smart contract from the network
@@ -72,48 +71,22 @@ public class QueryController {
     }
 
     /**
-     * Sends a query (written by a researcher) to the blockchain.
-     * <p></p>
-     * COUNT wearable|bedside_monitor field_name=value;
-     * AVERAGE wearable|bedside_monitor field_name;
-     * HISTOGRAM wearable|bedside_monitor field_name;
+     * Sends a query (written by a researcher) to the blockchain, and sends back the result.
      *
-     * @param request           the received HTTP request
+     * @param query             the (protobuf) Query object that should be sent to the blockchain
      * @param response          the HTTP response with the JWT that will be sent back
      * @throws IOException      if something goes wrong during the JSON deserialization process
      */
-    @GetMapping(ApiEndpoints.QUERIES)
+    @PostMapping(ApiEndpoints.QUERIES)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void queryChain(HttpServletRequest request,
+    public void queryChain(@JsonDeserialize(using = JsonToProtobufDeserializer.class)
+                               @RequestBody Query query,
                            HttpServletResponse response) throws IOException, GatewayException {
-        QueryType queryType;
-        DeviceType deviceType;
-        String queryField;
-        String queryValue;
-        try {
-            queryType = QueryType.valueOf(request.getParameter("query_type").toUpperCase());
-            deviceType = DeviceType.valueOf(request.getParameter("device_type").toUpperCase());
-            queryField = request.getParameter("query_field");
-            queryValue = request.getParameter("query_value");
-            if (queryField == null) {
-                throw new IllegalArgumentException();
-            }
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-
-        // TODO: update later
-        String query = queryType.name().toUpperCase() + deviceType.name() + queryField;
-        if (queryValue != null) {
-            query = query + "=" + queryValue;
-        }
-        query = query + ";";
-
-        // Return all the current assets on the ledger.
-        int result = Integer.parseInt(this.runQuery(query));
 
         // Query the chain
+        int result = Integer.parseInt(this.runQuery(query.toString()));
+
         String responseBody = this.objectMapper.createObjectNode().put("result", result).toString();
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(responseBody);
@@ -125,16 +98,14 @@ public class QueryController {
      * @throws GatewayException             if something goes wrong during transaction evaluation
      * @throws JsonProcessingException      if something goes wrong during JSON reading
      */
-    private String runQuery(String version) throws GatewayException, JsonProcessingException {
-        System.out.println("\n--> Evaluate Transaction: CountFirmwareVersionGreaterEqualThan,"
-                + "function returns the number of devices with firmware version greater than or"
-                + "equal to the specified version");
+    private String runQuery(String payload) throws GatewayException, JsonProcessingException {
+        System.out.println("\n--> Evaluate Transaction: CountFirmwareVersionGreaterEqualThan");
 
         // TODO: update to the query
         byte[] resultInBytes = this.contract
-                .evaluateTransaction("CountFirmwareVersionGreaterEqualThan", version);
+                .evaluateTransaction("CountFirmwareVersionGreaterEqualThan", payload);
         String result = new String(resultInBytes, StandardCharsets.UTF_8);
-        System.out.println("*** Result: " + prettyJson(result));
+        System.out.println("*** Result:\n" + prettyJson(result));
 
         return result;
     }

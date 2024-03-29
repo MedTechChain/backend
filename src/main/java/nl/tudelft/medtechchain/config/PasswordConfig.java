@@ -17,9 +17,9 @@ public class PasswordConfig {
     private final int passwordEncoderStrength = 12;
 
     /**
-     * Instantiate a bean password encoder object which uses BCrypt to hash passwords.
+     * Instantiates a bean password encoder object which uses BCrypt to hash passwords.
      *
-     * @return          the BCrypt password encoder object
+     * @return          the BCrypt PasswordEncoder object
      */
     @Bean
     public PasswordEncoder passwordEncoder() {

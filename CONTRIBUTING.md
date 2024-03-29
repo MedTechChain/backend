@@ -7,13 +7,12 @@ In this document (future) developers and contributors can find more information 
 Below is an index for the Java classes together with their purpose. All these classes can be found in [src/main/java/nl/tudelft/medtechchain/](src/main/java/nl/tudelft/medtechchain/) directory.
 
 `config`
-
 - `GatewayConfig.java`: A configuration class for the Fabric Gateway. For testing, it has to be mocked (see variable `gateway.mock` in `application.properties`)
+- `JacksonConfig`: A configuration class for ObjectMapper to specify custom JSON (de)serializers.
 - `PasswordConfig.java`: A configuration class for the (BCrypt) PasswordEncoder.
 - `SecurityConfig.java`: A configuration class for some of the Spring Security components (such as SecurityFilterChain, AuthenticationProvider, AuthenticationManager, CorsConfigurationSource). In this class, authorization requirements are defined for the endpoints (e.g. some endpoints are only accessible for admin, others for both admin and researcher).
 
 `controllers`
-
 - `ApiEndpoints`: A class that contains all supported API endpoints, so that they can be accessed from all places (for easy reference and modification).
 - `UserController.java`: A controller class that provides API endpoints for managing users and interacts with the AuthenticationService class. For the full API documentation, see [docs/](docs/) directory. Possible operations are:
   - **POST** `/api/users/login` (accessible for all)
@@ -22,10 +21,9 @@ Below is an index for the Java classes together with their purpose. All these cl
   - **PUT** `/api/users/update` (accessible only for admin)
   - **DELETE** `/api/users/delete` (accessible only for admin)
 - `QueryController.java`: A controller class that gets queries from researchers, sends them to the blockchain and returns the result. For the full API documentation, see [docs/](docs/) directory. Possible operations are:
-    - **GET** `/api/queries` (accessible only for researchers)
+    - **POST** `/api/queries` (accessible only for researchers)
 
 `jwt`
-
 - `JwtAuthenticationFilter.java`: A class that represents a custom authentication filter based on JWT.
 - `JwtProvider.java`: A class that manages JWTs, i.e. generation, parsing and validation etc.
 - `JwtSecretKey.java`: A configuration class for creating the JWT key.
@@ -41,12 +39,13 @@ Below is an index for the Java classes together with their purpose. All these cl
 - `UserData.java`: A class that is used to store the user data (userID, username, password, email, first name, last name, affiliation etc.).
 - `UserRole.java`: An enum class used to represent different user roles (currently "admin" and "researcher"), used for authorization checks when accessing endpoints. A new user is registered as researcher and this role cannot be changed. There is only one admin.
 
-`repositories`
+`protoutils`
+- `JsonToProtobufDeserializer`: A custom deserializer for the Query (protobuf) object, which is used when receiving a query request with JSON body which has to be forwarded to the blockchain.
 
+`repositories`
 - `UserDataRepository.java`: A class for the database that stores the user data (see `UserData.java` class).
 
 `services`
-
 - `AuthenticationService.java`: A service class that communicates with the database with the user data (see `UserDataRepository.java` and `UserData.java` classes).
 - `EmailService.java`: A service class used to send emails (when registering a new user, the generated credentials are sent to the new user by email).
 

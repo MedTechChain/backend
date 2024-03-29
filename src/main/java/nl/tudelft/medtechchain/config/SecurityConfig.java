@@ -74,7 +74,7 @@ public class SecurityConfig {
                             .hasAuthority(UserRole.ADMIN.name())
                         .requestMatchers(HttpMethod.PUT, ApiEndpoints.CHANGE_PASSWORD_API)
                             .permitAll()
-                        .requestMatchers(HttpMethod.GET, ApiEndpoints.QUERIES_API)
+                        .requestMatchers(HttpMethod.POST, ApiEndpoints.QUERIES_API)
                             .hasAuthority(UserRole.RESEARCHER.name())
                         .anyRequest().authenticated()
                 )
