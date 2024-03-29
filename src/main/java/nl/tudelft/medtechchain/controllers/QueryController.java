@@ -13,6 +13,7 @@ import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
 import org.hyperledger.fabric.client.GatewayException;
 import org.hyperledger.fabric.client.Network;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,9 @@ public class QueryController {
     private final Gateway gateway;
 
     private final Contract contract;
+
+    @Value("${gateway.query-smart-contract-name}")
+    private String queryContractName;
 
     /**
      * Creates a new QueryController object, which is used for sending queries to the blockchain.
@@ -84,8 +88,7 @@ public class QueryController {
                                @RequestBody Query query,
                            HttpServletResponse response) throws IOException, GatewayException {
 
-        // Query the chain
-        int result = Integer.parseInt(this.runQuery(query.toString()));
+        int result = Integer.parseInt(this.runQuery(query));
 
         String responseBody = this.objectMapper.createObjectNode().put("result", result).toString();
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -98,12 +101,12 @@ public class QueryController {
      * @throws GatewayException             if something goes wrong during transaction evaluation
      * @throws JsonProcessingException      if something goes wrong during JSON reading
      */
-    private String runQuery(String payload) throws GatewayException, JsonProcessingException {
-        System.out.println("\n--> Evaluate Transaction: CountFirmwareVersionGreaterEqualThan");
+    private String runQuery(Query query) throws GatewayException, JsonProcessingException {
+        System.out.printf("\n--> Evaluate Transaction:%n%s%n", query.toString());
 
-        // TODO: update to the query
-        byte[] resultInBytes = this.contract
-                .evaluateTransaction("CountFirmwareVersionGreaterEqualThan", payload);
+        byte[] queryInBytes = query.toByteString().toByteArray();
+        byte[] resultInBytes = this.contract.evaluateTransaction(queryContractName, queryInBytes);
+
         String result = new String(resultInBytes, StandardCharsets.UTF_8);
         System.out.println("*** Result:\n" + prettyJson(result));
 

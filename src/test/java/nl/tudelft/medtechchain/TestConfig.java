@@ -2,7 +2,6 @@ package nl.tudelft.medtechchain;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.nullable;
 
 import io.grpc.CallOptions;
 import java.nio.charset.StandardCharsets;
@@ -60,7 +59,7 @@ public class TestConfig {
                 Contract contractMock = Mockito.mock(Contract.class);
                 try {
                     Mockito.when(contractMock
-                                    .evaluateTransaction(anyString(), nullable(String.class)))
+                                    .evaluateTransaction(anyString(), any(byte[].class)))
                             .thenReturn("5".getBytes(StandardCharsets.UTF_8));
                 } catch (GatewayException e) {
                     return contractMock;

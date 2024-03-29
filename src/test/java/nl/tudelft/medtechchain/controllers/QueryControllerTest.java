@@ -148,7 +148,7 @@ public class QueryControllerTest {
 
         String json = QueryJsonBuilder.builder(this.objectMapper)
                 .withQueryType(QueryType.AVERAGE)
-                .withField("has_firmware_version")
+                .withField("%x%x%x")
                 .build();
 
         MockHttpServletResponse response = this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
