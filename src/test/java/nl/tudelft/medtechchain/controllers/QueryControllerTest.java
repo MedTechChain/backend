@@ -19,6 +19,7 @@ import nl.tudelft.medtechchain.models.UserData;
 import nl.tudelft.medtechchain.models.UserRole;
 import nl.tudelft.medtechchain.repositories.UserDataRepository;
 import org.assertj.core.api.Assertions;
+import org.hyperledger.fabric.client.Gateway;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -48,6 +49,9 @@ public class QueryControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    Gateway gateway;
 
     private static final UUID ADMIN_USER_ID =
             UUID.fromString("87f8304e-4740-45e6-9934-1bce37ac3d1b");
@@ -165,8 +169,8 @@ public class QueryControllerTest {
         JsonNode jsonNode = this.objectMapper.readTree(jsonResult);
         Assertions.assertThat(jsonNode.has("result")).isTrue();
 
-        int result = Integer.parseInt(jsonNode.get("result").asText());
-        Assertions.assertThat(result).isEqualTo(5);
+        double result = Double.parseDouble(jsonNode.get("result").asText());
+        Assertions.assertThat(result).isEqualTo(4.4);
     }
 
     @Test
@@ -198,10 +202,11 @@ public class QueryControllerTest {
 
         String jsonResult = response.getContentAsString();
         JsonNode jsonNode = this.objectMapper.readTree(jsonResult);
+        System.out.println(jsonNode.toPrettyString());
         Assertions.assertThat(jsonNode.has("result")).isTrue();
 
-        int result = Integer.parseInt(jsonNode.get("result").asText());
-        Assertions.assertThat(result).isEqualTo(5);
+        double result = Double.parseDouble(jsonNode.get("result").asText());
+        Assertions.assertThat(result).isEqualTo(4.4);
     }
 
 

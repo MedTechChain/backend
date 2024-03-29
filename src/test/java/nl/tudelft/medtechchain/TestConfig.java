@@ -1,11 +1,11 @@
 package nl.tudelft.medtechchain;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 
 import io.grpc.CallOptions;
-import java.nio.charset.StandardCharsets;
 import java.util.function.UnaryOperator;
+import nl.medtechchain.protos.query.AverageResult;
 import org.hyperledger.fabric.client.BlockAndPrivateDataEventsRequest;
 import org.hyperledger.fabric.client.BlockEventsRequest;
 import org.hyperledger.fabric.client.ChaincodeEvent;
@@ -48,6 +48,7 @@ public class TestConfig {
     @ConditionalOnProperty(name = "gateway.mock", havingValue = "true")
     public Gateway getGateway() {
         Gateway gatewayMock = Mockito.mock(Gateway.class);
+
         Mockito.when(gatewayMock.getNetwork(any())).thenReturn(new Network() {
             @Override
             public Contract getContract(String s) {
@@ -59,8 +60,11 @@ public class TestConfig {
                 Contract contractMock = Mockito.mock(Contract.class);
                 try {
                     Mockito.when(contractMock
-                                    .evaluateTransaction(anyString(), any(byte[].class)))
-                            .thenReturn("5".getBytes(StandardCharsets.UTF_8));
+                                    .evaluateTransaction(eq("Query"), any(byte[].class)))
+                            .thenReturn(
+                                    // CountResult.newBuilder().setResult(7).build().toByteArray()
+                                    AverageResult.newBuilder().setResult(4.4).build().toByteArray()
+                            );
                 } catch (GatewayException e) {
                     return contractMock;
                 }

@@ -1,13 +1,16 @@
 package nl.tudelft.medtechchain.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import nl.medtechchain.protos.query.AverageResult;
+import nl.medtechchain.protos.query.CountAllResult;
+import nl.medtechchain.protos.query.CountResult;
 import nl.medtechchain.protos.query.Query;
+import nl.medtechchain.protos.query.QueryType;
 import nl.tudelft.medtechchain.protoutils.JsonToProtobufDeserializer;
 import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
@@ -37,8 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(ApiEndpoints.QUERIES_API_PREFIX)
 public class QueryController {
 
-    private final ObjectMapper objectMapper;
-
     private final Gateway gateway;
 
     private final Contract contract;
@@ -51,11 +52,9 @@ public class QueryController {
      *
      * @param env               the Spring environment (to access the defined properties)
      * @param gateway           the Fabric Gateway
-     * @param objectMapper      the ObjectMapper object, used to read/write JSON strings
      */
-    public QueryController(Environment env, Gateway gateway, ObjectMapper objectMapper) {
+    public QueryController(Environment env, Gateway gateway) {
         this.gateway = gateway;
-        this.objectMapper = objectMapper;
 
         // Get a network instance representing the channel where the smart contract is deployed
         Network network = gateway.getNetwork(env.getProperty("gateway.channel-name", ""));
@@ -88,40 +87,42 @@ public class QueryController {
                                @RequestBody Query query,
                            HttpServletResponse response) throws IOException, GatewayException {
 
-        int result = Integer.parseInt(this.runQuery(query));
-
-        String responseBody = this.objectMapper.createObjectNode().put("result", result).toString();
+        String queryResult = this.runQuery(query);
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write(responseBody);
+        response.getWriter().write(queryResult);
     }
 
     /**
      * Evaluates a transaction to run a query on the blockchain.
      *
-     * @throws GatewayException             if something goes wrong during transaction evaluation
-     * @throws JsonProcessingException      if something goes wrong during JSON reading
+     * @throws GatewayException                 if something goes wrong when evaluating transaction
+     * @throws InvalidProtocolBufferException   if something goes wrong when parsing query result
      */
-    private String runQuery(Query query) throws GatewayException, JsonProcessingException {
+    private String runQuery(Query query) throws GatewayException, InvalidProtocolBufferException {
         System.out.printf("\n--> Evaluate Transaction:%n%s%n", query.toString());
 
-        byte[] queryInBytes = query.toByteString().toByteArray();
+        byte[] queryInBytes = query.toByteArray();
         byte[] resultInBytes = this.contract.evaluateTransaction(queryContractName, queryInBytes);
 
-        String result = new String(resultInBytes, StandardCharsets.UTF_8);
-        System.out.println("*** Result:\n" + prettyJson(result));
+        String result = parseQueryResult(resultInBytes, query.getQueryType());
+        System.out.println("*** Result:\n" + result);
 
         return result;
     }
 
-    /**
-     * A helper method used to print a JSON string in the pretty format.
-     *
-     * @param json                          the string with JSON that has to be pretty-printed
-     * @return                              the pretty-printed JSON string
-     * @throws JsonProcessingException      if something goes wrong during JSON reading
-     */
-    private String prettyJson(final String json) throws JsonProcessingException {
-        Object jsonObject = this.objectMapper.readValue(json, Object.class);
-        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
+    private String parseQueryResult(byte[] queryResult, QueryType queryType)
+            throws InvalidProtocolBufferException {
+
+        switch (queryType) {
+            case COUNT -> {
+                return JsonFormat.printer().print(CountResult.parseFrom(queryResult));
+            }
+            case COUNT_ALL -> {
+                return JsonFormat.printer().print(CountAllResult.parseFrom(queryResult));
+            }
+            default -> {
+                return JsonFormat.printer().print(AverageResult.parseFrom(queryResult));
+            }
+        }
     }
 }

@@ -53,8 +53,9 @@ dependencies {
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.12.5'
 
 	// Jackson for JSON parsing
-	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.16.1'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.17.0'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.0'
 	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
 
 	// Email support
