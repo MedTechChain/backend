@@ -5,12 +5,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import nl.medtechchain.protos.query.AverageResult;
-import nl.medtechchain.protos.query.CountAllResult;
-import nl.medtechchain.protos.query.CountResult;
 import nl.medtechchain.protos.query.Query;
-import nl.medtechchain.protos.query.QueryType;
 import nl.tudelft.medtechchain.protoutils.JsonToProtobufDeserializer;
 import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
@@ -21,17 +16,15 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 
 /**
  * A controller class that gets queries from researchers,
- *  sends them to the chain and returns the result.
+ * sends them to the chain and returns the result.
  * The code related to the Gateway API is taken from:
  * <a href="https://hyperledger-fabric.readthedocs.io/en/latest/write_first_app.html">Hyperledger Fabric</a>
  * <a href="https://github.com/hyperledger/fabric-samples/tree/main/asset-transfer-basic/application-gateway-java">Fabric Samples</a>
@@ -50,8 +43,8 @@ public class QueryController {
     /**
      * Creates a new QueryController object, which is used for sending queries to the blockchain.
      *
-     * @param env               the Spring environment (to access the defined properties)
-     * @param gateway           the Fabric Gateway
+     * @param env     the Spring environment (to access the defined properties)
+     * @param gateway the Fabric Gateway
      */
     public QueryController(Environment env, Gateway gateway) {
         this.gateway = gateway;
@@ -64,7 +57,7 @@ public class QueryController {
     }
 
     /**
-     *  Closes the gateway before the controller is destroyed.
+     * Closes the gateway before the controller is destroyed.
      */
     @PreDestroy
     public void destroy() {
@@ -76,15 +69,15 @@ public class QueryController {
     /**
      * Sends a query (written by a researcher) to the blockchain, and sends back the result.
      *
-     * @param query             the (protobuf) Query object that should be sent to the blockchain
-     * @param response          the HTTP response with the JWT that will be sent back
-     * @throws IOException      if something goes wrong during the JSON deserialization process
+     * @param query    the (protobuf) Query object that should be sent to the blockchain
+     * @param response the HTTP response with the JWT that will be sent back
+     * @throws IOException if something goes wrong during the JSON deserialization process
      */
     @PostMapping(ApiEndpoints.QUERIES)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public void queryChain(@JsonDeserialize(using = JsonToProtobufDeserializer.class)
-                               @RequestBody Query query,
+                           @RequestBody Query query,
                            HttpServletResponse response) throws IOException, GatewayException {
 
         String queryResult = this.runQuery(query);
@@ -95,34 +88,17 @@ public class QueryController {
     /**
      * Evaluates a transaction to run a query on the blockchain.
      *
-     * @throws GatewayException                 if something goes wrong when evaluating transaction
-     * @throws InvalidProtocolBufferException   if something goes wrong when parsing query result
+     * @throws GatewayException               if something goes wrong when evaluating transaction
+     * @throws InvalidProtocolBufferException if something goes wrong when parsing query result
      */
     private String runQuery(Query query) throws GatewayException, InvalidProtocolBufferException {
         System.out.printf("\n--> Evaluate Transaction:%n%s%n", query.toString());
 
-        byte[] queryInBytes = query.toByteArray();
-        byte[] resultInBytes = this.contract.evaluateTransaction(queryContractName, queryInBytes);
+        byte[] resultInBytes = this.contract.evaluateTransaction(queryContractName, JsonFormat.printer().print(query));
 
-        String result = parseQueryResult(resultInBytes, query.getQueryType());
+        String result = new String(resultInBytes, StandardCharsets.UTF_8);
         System.out.println("*** Result:\n" + result);
 
         return result;
-    }
-
-    private String parseQueryResult(byte[] queryResult, QueryType queryType)
-            throws InvalidProtocolBufferException {
-
-        switch (queryType) {
-            case COUNT -> {
-                return JsonFormat.printer().print(CountResult.parseFrom(queryResult));
-            }
-            case COUNT_ALL -> {
-                return JsonFormat.printer().print(CountAllResult.parseFrom(queryResult));
-            }
-            default -> {
-                return JsonFormat.printer().print(AverageResult.parseFrom(queryResult));
-            }
-        }
     }
 }
