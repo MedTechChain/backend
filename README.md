@@ -127,11 +127,11 @@ real emails, please use the `demo` profile. Mind that when running `demo` profil
 
 ## Run the infrastructure
 
-In order to run the blockchain infrastructure, go to `dev-tools` repository which has to be present in the parent directory. Then run:
+In order to run the blockchain infrastructure, go to `tools` repository which has to be present in the parent directory. Then run:
 
 ```shell
 ./infra-up.sh
 ./cc-deploy.sh
 ```
 
-Check [dev-tools](https://github.com/MedTechChain/dev-tools) for more instructions regarding running the infrastructure.
+Check [tools](https://github.com/MedTechChain/tools) for more instructions regarding running the infrastructure.

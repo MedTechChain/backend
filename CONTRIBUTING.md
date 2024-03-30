@@ -55,13 +55,13 @@ Below is an index for the Java classes together with their purpose. All these cl
 
 ### Database
 
-For *production/development* configurations, see [src/main/resources/application.properties](src/main/resources/application.properties) file. Postgres database is used. The database is initialised with the SQL script [src/main/resources/data.sql](src/main/resources/data.sql). In order to run the database, you have to run `./run-deps.sh` script in `dev-tools/` directory.
+For *production/development* configurations, see [src/main/resources/application.properties](src/main/resources/application.properties) file. Postgres database is used. The database is initialised with the SQL script [src/main/resources/data.sql](src/main/resources/data.sql). In order to run the database, you have to run `./run-deps.sh` script in `tools/` directory.
 
 For *testing* configurations, see [src/test/resources/application.properties](src/test/resources/application.properties) file. H2 database is used. The database is initialised with the SQL script [src/test/resources/data.sql](src/test/resources/data.sql).
 
 ### Fabric Gateway
 
-In order to run the Fabric Gateway, you need to have [chaincode](https://github.com/MedTechChain/chaincode) and [dev-tools](https://github.com/MedTechChain/dev-tools) repositories cloned in the parent directory of this repository (i.e. you will have `chaincode`, `dev-tools` and `backend` in one directory). To run the infrastructure, run `./infra-up.sh` and then `./cc-deploy.sh`.
+In order to run the Fabric Gateway, you need to have [chaincode](https://github.com/MedTechChain/chaincode) and [tools](https://github.com/MedTechChain/tools) repositories cloned in the parent directory of this repository (i.e. you will have `chaincode`, `tools` and `backend` in one directory). To run the infrastructure, run `./infra-up.sh` and then `./cc-deploy.sh`.
 
 ## Testing
 
