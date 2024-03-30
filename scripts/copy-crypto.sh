@@ -3,7 +3,7 @@
 cd -- "$(dirname "$0")"
 
 if [ -z "$1" ]; then
-    PEER_ORGANIZATIONS_CRYPTO_DIR_PATH="../../dev-tools/fabric/.generated/crypto/peerOrganizations/"
+    PEER_ORGANIZATIONS_CRYPTO_DIR_PATH="../../tools/fabric/.generated/crypto/peerOrganizations/"
     if [ ! -d "$PEER_ORGANIZATIONS_CRYPTO_DIR_PATH" ]; then
         echo "Error: No argument provided and $PEER_ORGANIZATIONS_CRYPTO_DIR_PATH not present (repo)"
         echo "Usage: ./copy-crypto.sh [<PEER_ORGANIZATIONS_CRYPTO_DIR_PATH>]"
