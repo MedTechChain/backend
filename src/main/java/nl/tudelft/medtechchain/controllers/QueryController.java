@@ -5,6 +5,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import nl.medtechchain.protos.query.Query;
 import nl.tudelft.medtechchain.protoutils.JsonToProtobufDeserializer;
 import org.hyperledger.fabric.client.Contract;
@@ -16,10 +18,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 
 /**
@@ -69,9 +73,10 @@ public class QueryController {
     /**
      * Sends a query (written by a researcher) to the blockchain, and sends back the result.
      *
-     * @param query    the (protobuf) Query object that should be sent to the blockchain
-     * @param response the HTTP response with the JWT that will be sent back
-     * @throws IOException if something goes wrong during the JSON deserialization process
+     * @param query                 the (protobuf) Query object to be sent to the blockchain
+     * @param response              the HTTP response with the JWT that will be sent back
+     * @throws IOException          if something goes wrong during the JSON deserialization process
+     * @throws GatewayException     if something goes wrong when running the query
      */
     @PostMapping(ApiEndpoints.QUERIES)
     @ResponseStatus(HttpStatus.OK)
@@ -94,7 +99,8 @@ public class QueryController {
     private String runQuery(Query query) throws GatewayException, InvalidProtocolBufferException {
         System.out.printf("\n--> Evaluate Transaction:%n%s%n", query.toString());
 
-        byte[] resultInBytes = this.contract.evaluateTransaction(queryContractName, JsonFormat.printer().print(query));
+        byte[] resultInBytes = this.contract.evaluateTransaction(this.queryContractName,
+                JsonFormat.printer().print(query));
 
         String result = new String(resultInBytes, StandardCharsets.UTF_8);
         System.out.println("*** Result:\n" + result);

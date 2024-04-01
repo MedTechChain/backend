@@ -1,17 +1,24 @@
 package nl.tudelft.medtechchain.controllers;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.net.HttpHeaders;
+import com.google.protobuf.util.JsonFormat;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 import nl.medtechchain.protos.devicemetadata.DeviceType;
+import nl.medtechchain.protos.query.AverageResult;
+import nl.medtechchain.protos.query.CountAllResult;
+import nl.medtechchain.protos.query.CountResult;
 import nl.medtechchain.protos.query.Hospital;
 import nl.medtechchain.protos.query.QueryType;
 import nl.tudelft.medtechchain.jwt.JwtProvider;
@@ -19,9 +26,12 @@ import nl.tudelft.medtechchain.models.UserData;
 import nl.tudelft.medtechchain.models.UserRole;
 import nl.tudelft.medtechchain.repositories.UserDataRepository;
 import org.assertj.core.api.Assertions;
+import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -52,6 +62,9 @@ public class QueryControllerTest {
 
     @Autowired
     Gateway gateway;
+
+    @Value("${gateway.query-smart-contract-name}")
+    private String queryContractName;
 
     private static final UUID ADMIN_USER_ID =
             UUID.fromString("87f8304e-4740-45e6-9934-1bce37ac3d1b");
@@ -146,10 +159,21 @@ public class QueryControllerTest {
     }
 
     @Test
-    public void testQueryChainSuccessfulOnlyRequiredFields() throws Exception {
+    public void testQueryChainSuccessfulOnlyRequiredFieldsCount() throws Exception {
         UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
         String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
 
+        // Configure the Contract mock
+        Contract contractMock = this.gateway.getNetwork("").getContract("", "");
+
+        CountResult countResult = CountResult.newBuilder().setResult(7).build();
+        String countMatcher = String.format(".*%s.*", QueryType.COUNT);
+        String countResultJson = JsonFormat.printer().print(countResult);
+        Mockito.when(contractMock.evaluateTransaction(eq(this.queryContractName),
+                        Mockito.matches(countMatcher)))
+                .thenReturn(countResultJson.getBytes());
+
+        // Build the JSON query
         String json = QueryJsonBuilder.builder(this.objectMapper)
                 .withQueryType(QueryType.AVERAGE)
                 .withField("%x%x%x")
@@ -174,10 +198,65 @@ public class QueryControllerTest {
     }
 
     @Test
-    public void testQueryChainSuccessfulAllFields() throws Exception {
+    public void testQueryChainSuccessfulOnlyRequiredFieldsCountAll() throws Exception {
         UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
         String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
 
+        // Configure the Contract mock
+        Contract contractMock = this.gateway.getNetwork("").getContract("", "");
+
+        CountAllResult countAllResult = CountAllResult.newBuilder()
+                .putResult("r1", 9).build();
+        String countAll = String.format(".*%s.*", QueryType.COUNT_ALL);
+        String countAllResultJson = JsonFormat.printer().print(countAllResult);
+        Mockito.when(contractMock.evaluateTransaction(eq(this.queryContractName),
+                        Mockito.matches(countAll)))
+                .thenReturn(countAllResultJson.getBytes());
+
+        // Build the JSON query
+        String json = QueryJsonBuilder.builder(this.objectMapper)
+                .withQueryType(QueryType.COUNT_ALL)
+                .withField("%s%s%s\0%s%s%s")
+                .build();
+
+        MockHttpServletResponse response = this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json).characterEncoding("utf-8"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        Assertions.assertThat(response.getHeader(HttpHeaders.CONTENT_TYPE))
+                .isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
+        String jsonResult = response.getContentAsString();
+        JsonNode jsonNode = this.objectMapper.readTree(jsonResult);
+        Assertions.assertThat(jsonNode.has("result")).isTrue();
+
+        JsonNode resultNode = jsonNode.get("result");
+        Map<String, Integer> resultMap = objectMapper.convertValue(resultNode,
+                new TypeReference<>() {});
+
+        Assertions.assertThat(resultMap.containsKey("r1")).isTrue();
+        Assertions.assertThat(resultMap.get("r1")).isEqualTo(9);
+    }
+
+    @Test
+    public void testQueryChainSuccessfulAllFieldsAverage() throws Exception {
+        UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
+        String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
+
+        // Configure the Contract mock
+        Contract contractMock = this.gateway.getNetwork("").getContract("", "");
+
+        AverageResult averageResult = AverageResult.newBuilder().setResult(4.4).build();
+        String average = String.format(".*%s.*", QueryType.AVERAGE);
+        String averageResultJson = JsonFormat.printer().print(averageResult);
+        Mockito.when(contractMock.evaluateTransaction(eq(this.queryContractName),
+                        Mockito.matches(average)))
+                .thenReturn(averageResultJson.getBytes());
+
+        // Build the JSON query
         String json = QueryJsonBuilder.builder(this.objectMapper)
                 .withQueryType(QueryType.AVERAGE)
                 .withDeviceType(DeviceType.WEARABLE_DEVICE)
