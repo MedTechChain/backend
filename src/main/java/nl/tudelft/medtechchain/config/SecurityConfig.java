@@ -1,5 +1,6 @@
 package nl.tudelft.medtechchain.config;
 
+import jakarta.servlet.DispatcherType;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import nl.tudelft.medtechchain.controllers.ApiEndpoints;
@@ -60,6 +61,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource(env)))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        // Allow custom status error codes to be sent back (instead of just 403)
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         // For all endpoints except LOGIN and CHANGE_PASSWORD, 401 will be returned
                         //  if the JWT token is missing (see JwtAuthenticationProvider for details)
                         .requestMatchers(HttpMethod.POST, ApiEndpoints.LOGIN_API)
