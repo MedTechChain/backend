@@ -18,7 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
  *  which has to be forwarded to the blockchain.
  */
 public class JsonToProtobufDeserializer extends JsonDeserializer<Query> {
-    private final Set<String> requiredFields = Set.of("query_type", "field");
+    private final Set<String> requiredFields = Set.of("query_type");
 
     /**
      * Deserializes a JSON string to a Query (protobuf) object.
