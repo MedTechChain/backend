@@ -46,7 +46,7 @@ public class JsonToProtobufDeserializer extends JsonDeserializer<Query> {
             JsonFormat.parser().merge(json, queryBuilder);
             return queryBuilder.build();
         } catch (InvalidProtocolBufferException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error while parsing JSON");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error while parsing JSON: " + e.getMessage());
         }
     }
 }
