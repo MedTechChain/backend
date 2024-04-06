@@ -44,10 +44,10 @@ Below is an index for the Java classes together with their purpose. All these cl
 - [JsonToProtobufDeserializer](src/main/java/nl/medtechchain/protoutils/JsonToProtobufDeserializer.java): A custom deserializer for the Query (protobuf) object, which is used when receiving a query request with JSON body which has to be forwarded to the blockchain.
 
 [repositories](src/main/java/nl/medtechchain/repositories)
-- [UserDataRepository.java](src/main/java/nl/medtechchain/repositories/UserDataRepository.java): A class for the database that stores the user data (see `UserData.java` class).
+- [UserDataRepository.java](src/main/java/nl/medtechchain/repositories/UserDataRepository.java): A class for the database that stores the user data (see [UserData.java](src/main/java/nl/medtechchain/models/UserData.java) class).
 
 [services](src/main/java/nl/medtechchain/services)
-- [AuthenticationService.java](src/main/java/nl/medtechchain/services/AuthenticationService.java): A service class that communicates with the database with the user data (see `UserDataRepository.java` and `UserData.java` classes).
+- [AuthenticationService.java](src/main/java/nl/medtechchain/services/AuthenticationService.java): A service class that communicates with the database with the user data (see [UserDataRepository.java](src/main/java/nl/medtechchain/repositories/UserDataRepository.java) and [UserData.java](src/main/java/nl/medtechchain/models/UserData.java) classes).
 - [EmailService.java](src/main/java/nl/medtechchain/services/EmailService.java): A service class used to send emails (when registering a new user, the generated credentials are sent to the new user by email).
 
 [Application.java](src/main/java/nl/medtechchain/Application.java): The main class for the backend server.
@@ -66,7 +66,7 @@ In order to run the Fabric Gateway, you need to have [chaincode](https://github.
 
 ## Testing
 
-Tests can be found in [src/test/java/nl/medtechchain/](src/test/java/nl/medtechchain/) directory. `TestConfig` class configures some mocks used for testing. The actual tests can be found in `controllers`, `models` and `services` packages (directories). For controller tests, `MockMvc` is used.
+Tests can be found in [src/test/java/nl/medtechchain/](src/test/java/nl/medtechchain/) directory. [TestConfig](src/test/java/nl/medtechchain/TestConfig.java) class configures some mocks used for testing. The actual tests can be found in `controllers`, `models` and `services` packages (directories). For controller tests, `MockMvc` is used.
 
 When writing tests, please try to write meaningful assertions and make sure that the tests pass before you push. 
 

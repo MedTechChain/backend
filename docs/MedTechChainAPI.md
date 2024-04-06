@@ -241,6 +241,8 @@ curl --location 'http://localhost:8088/api/users/login' \
 
 `PUT http://localhost:8088/api/users/change_password`
 
+#### Request Headers
+
 | Header        | Value                                                                                                                                   |
 |---------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | Content-Type  | application/json                                                                                                                        |
@@ -273,3 +275,169 @@ curl --location --request PUT 'http://localhost:8088/api/users/change_password' 
 `200 OK`
 
 This request does not return any response body.
+
+---
+
+### Run Query (Average)
+
+`POST http://localhost:8088/api/queries`
+
+#### Request Headers
+
+| Header        | Value                                                                                                                                   |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| Authorization | Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk |
+
+#### Body
+
+```json
+{
+  "query_type" : "AVERAGE",
+  "device_type" : "WEARABLE_DEVICE",
+  "hospital_list" : {
+    "hospitals" : [ "LIFECARE", "MEDIVALE", "HEALPOINT" ]
+  },
+  "start_time" : "2024-03-29T16:26:01.141238759Z",
+  "stop_time" : "2024-03-29T16:26:01.141332438Z",
+  "field" : "rental_price"
+}
+```
+
+#### Example
+
+##### Request
+
+```shell
+curl --location 'http://localhost:8088/api/queries' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk' \
+--data '{
+  "query_type" : "AVERAGE",
+  "device_type" : "WEARABLE_DEVICE",
+  "hospital_list" : {
+    "hospitals" : [ "LIFECARE", "MEDIVALE", "HEALPOINT" ]
+  },
+  "start_time" : "2024-03-29T16:26:01.141238759Z",
+  "stop_time" : "2024-03-29T16:26:01.141332438Z",
+  "field" : "rental_price"
+}'
+```
+
+##### Response
+
+`200 OK`
+
+```json
+{
+    "result": 0
+}
+```
+
+---
+
+### Run Query (Count)
+
+`POST http://localhost:8088/api/queries`
+
+#### Request Headers
+
+| Header        | Value                                                                                                                                   |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| Authorization | Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk |
+
+#### Body
+
+```json
+{
+  "query_type" : "COUNT",
+  "device_type" : "PORTABLE_DEVICE",
+  "hospital_list" : {
+    "hospitals" : [ "LIFECARE", "HEALPOINT" ]
+  },
+  "start_time" : "2024-03-29T16:26:01.141238759Z",
+  "stop_time" : "2024-03-29T16:26:01.141332438Z"
+}
+```
+
+#### Example
+
+##### Request
+
+```shell
+curl --location 'http://localhost:8088/api/queries' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk' \
+--data '{
+  "query_type" : "COUNT",
+  "device_type" : "PORTABLE_DEVICE",
+  "hospital_list" : {
+    "hospitals" : [ "LIFECARE", "HEALPOINT" ]
+  },
+  "start_time" : "2024-03-29T16:26:01.141238759Z",
+  "stop_time" : "2024-03-29T16:26:01.141332438Z"
+}'
+```
+
+##### Response
+
+`200 OK`
+
+```json
+{
+    "result": 3
+}
+```
+
+---
+
+### Run Query (Count All)
+
+`POST http://localhost:8088/api/queries`
+
+#### Request Headers
+
+| Header        | Value                                                                                                                                   |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| Authorization | Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk |
+
+#### Body
+
+```json
+{
+  "query_type" : "COUNT_ALL",
+  "device_type" : "PORTABLE_DEVICE",
+  "hospital_list" : {
+    "hospitals" : [ "LIFECARE" ]
+  },
+  "start_time" : "2024-03-29T16:26:01.141238759Z",
+  "stop_time" : "2024-03-29T16:26:01.141332438Z",
+  "field": "medical_speciality"
+}
+```
+
+#### Example
+
+##### Request
+
+```shell
+curl --location 'http://localhost:8088/api/queries' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJyZXNlYXJjaGVyIn0.l-K2Bh-XtvtlTBsvn-2lRZxV6nGqjO8PuxRpiFH0Bhk' \
+--data '{
+  "query_type" : "COUNT_ALL",
+  "device_type" : "PORTABLE_DEVICE",
+  "hospital_list" : {
+    "hospitals" : [ "LIFECARE" ]
+  },
+  "start_time" : "2024-03-29T16:26:01.141238759Z",
+  "stop_time" : "2024-03-29T16:26:01.141332438Z",
+  "field": "medical_speciality"
+}'
+```
+
+##### Response
+
+`200 OK`
+
+```json
+{
+    "result": {}
+}
+```
