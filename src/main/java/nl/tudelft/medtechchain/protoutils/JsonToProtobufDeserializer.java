@@ -42,11 +42,7 @@ public class JsonToProtobufDeserializer extends JsonDeserializer<Query> {
         }
         String json = treeNode.toString();
 
-        try {
-            JsonFormat.parser().merge(json, queryBuilder);
-            return queryBuilder.build();
-        } catch (InvalidProtocolBufferException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error while parsing JSON: " + e.getMessage());
-        }
+        JsonFormat.parser().merge(json, queryBuilder);
+        return queryBuilder.build();
     }
 }

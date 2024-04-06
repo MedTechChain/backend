@@ -117,18 +117,14 @@ jacocoTestReport {
 		jacocoTestCoverageVerification
 	}
 
-	// We exclude GatewayConfig, since the functionality has been provided to us by the code in the fabric samples
-	// (https://github.com/hyperledger/fabric-samples/tree/main/asset-transfer-basic/application-gateway-java)
-	//  and has not been written by us.
-	// Furthermore, in order to test this class, everything has to be mocked and it is not possible to test this
-	//  class in a proper and meaningful way (especially without actually having to run the fabric infrastructure).
+	// We exclude config files, since they are not meant to be tested with unit/integration tests.
 	// We also exclude EmailService from the coverage, since with the current implementation it is impossible to test it
 	//  in a proper and meaningful way (while we can mock the JavaMailSender, we cannot really test whether the email
 	//  has been sent successfully; furthermore, the MimeMessagePreparator is created with a lambda which is never
 	//  called in the application, but is required to create the class (thus, it cannot be covered).
 	afterEvaluate {
 		classDirectories.setFrom(files(classDirectories.files.collect {
-			fileTree(dir: it, exclude: ['nl/tudelft/medtechchain/config/GatewayConfig.class',
+			fileTree(dir: it, exclude: ['nl/tudelft/medtechchain/config/',
 										'nl/tudelft/medtechchain/services/EmailService.class'])
 		}))
 	}

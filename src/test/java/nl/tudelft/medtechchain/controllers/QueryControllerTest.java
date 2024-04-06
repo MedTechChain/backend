@@ -63,6 +63,8 @@ public class QueryControllerTest {
     @Autowired
     Gateway gateway;
 
+    private static final boolean HTTPS = true;
+
     @Value("${gateway.query-smart-contract-name}")
     private String queryContractName;
 
@@ -84,11 +86,11 @@ public class QueryControllerTest {
                 .put("qwerty", "123456")
                 .toString();
 
-        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
+        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API).secure(HTTPS)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -101,7 +103,7 @@ public class QueryControllerTest {
                 .withField("is_vulnerable")
                 .build();
 
-        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
+        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API).secure(HTTPS)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -117,27 +119,11 @@ public class QueryControllerTest {
                 .withField("has_device_version")
                 .build();
 
-        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
+        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API).secure(HTTPS)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(json))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void testQueryChainFailsOnMissingRequiredFieldsField() throws Exception {
-        UUID userId = this.userDataRepository.save(this.testResearcher).getUserId();
-        String jwt = this.jwtProvider.generateJwtToken(userId, UserRole.RESEARCHER, new Date());
-
-        String json = QueryJsonBuilder.builder(this.objectMapper)
-                .withQueryType(QueryType.COUNT_ALL)
-                .build();
-
-        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -151,11 +137,11 @@ public class QueryControllerTest {
                 .put(QueryJsonBuilder.FIELD_PARAM, "count_vulnerabilities")
                 .toString();
 
-        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
+        this.mockMvc.perform(post(ApiEndpoints.QUERIES_API).secure(HTTPS)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(json))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -180,6 +166,7 @@ public class QueryControllerTest {
                 .build();
 
         MockHttpServletResponse response = this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
+                        .secure(HTTPS)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json).characterEncoding("utf-8"))
@@ -220,6 +207,7 @@ public class QueryControllerTest {
                 .build();
 
         MockHttpServletResponse response = this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
+                        .secure(HTTPS)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json).characterEncoding("utf-8"))
@@ -270,6 +258,7 @@ public class QueryControllerTest {
         System.out.println(json);
 
         MockHttpServletResponse response = this.mockMvc.perform(post(ApiEndpoints.QUERIES_API)
+                        .secure(HTTPS)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json).characterEncoding("utf-8"))

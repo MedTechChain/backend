@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 
 /**
@@ -58,30 +57,35 @@ public class UserController {
      *
      * @param jsonNode          a JSON node representing the JSON object
      * @param fields            fields to be checked
+     * @return                  true if at least one field is missing in the JSON node
      */
-    private void checkJsonFields(JsonNode jsonNode, String... fields) {
+    private boolean hasMissingFields(JsonNode jsonNode, String... fields) {
         for (String field : fields) {
-            if (!jsonNode.has(field)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            if (!jsonNode.hasNonNull(field)) {
+                return true;
             }
         }
+        return false;
     }
 
     /**
      * Logs in the user. If successful, sends back a JSON with JWT.
      * Both admin and researchers are allowed to perform this operation.
      *
-     * @param request           the received HTTP request
-     * @param response          the HTTP response with the JWT that will be sent back
-     * @throws IOException      if something goes wrong during the JSON deserialization process
+     * @param request           the HTTP request that has been received form the client
+     * @param response          the HTTP response that will be sent back
+     * @throws IOException      if something goes wrong with the servlets
      */
     @PostMapping(ApiEndpoints.LOGIN)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void login(HttpServletRequest request,
+                      HttpServletResponse response) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
-        this.checkJsonFields(jsonNode, "username", "password");
-
+        if (this.hasMissingFields(jsonNode, "username", "password")) {
+            response.sendError(HttpStatus.BAD_REQUEST.value(), "Missing fields in JSON body");
+            return;
+        }
         String username = jsonNode.get("username").asText();
         String password = jsonNode.get("password").asText();
 
@@ -104,15 +108,19 @@ public class UserController {
      * Creates and registers a new user based on the data specified in the JSON body of the request.
      * Only admin is allowed to perform this operation, which will be checked using the JWT.
      *
-     * @param request           the HTTP request with the JWT and the data about the new user
-     * @throws IOException      if something goes wrong during the JSON deserialization process
+     * @param request           the HTTP request that has been received form the client
+     * @param response          the HTTP response that will be sent back
+     * @throws IOException      if something goes wrong with the servlets
      */
     @PostMapping(ApiEndpoints.REGISTER)
     @ResponseStatus(HttpStatus.CREATED)
-    public void registerNewUser(HttpServletRequest request) throws IOException {
+    public void registerNewUser(HttpServletRequest request,
+                                HttpServletResponse response) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
-        this.checkJsonFields(jsonNode, "email", "first_name", "last_name", "affiliation");
-
+        if (this.hasMissingFields(jsonNode, "email", "first_name", "last_name", "affiliation")) {
+            response.sendError(HttpStatus.BAD_REQUEST.value(), "Missing fields in JSON body");
+            return;
+        }
         String email = jsonNode.get("email").asText();
         String firstName  = jsonNode.get("first_name").asText();
         String lastName = jsonNode.get("last_name").asText();
@@ -128,14 +136,13 @@ public class UserController {
      *  (Spring Security performs the actual authorization check in AuthorizationFilter).
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
-     * @param response          the HTTP response with the found researchers that will be sent back
-     * @throws IOException      if something goes wrong during the JSON deserialization process
+     * @param response          the HTTP response that will be sent back
+     * @throws IOException      if something goes wrong with the servlets
      */
     @GetMapping(ApiEndpoints.GET_RESEARCHERS)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void getAllResearchers(HttpServletResponse response)
-            throws IOException {
+    public void getAllResearchers(HttpServletResponse response) throws IOException {
         List<Researcher> researchers = this.authenticationService.getAllResearchers();
         String responseBody = this.objectMapper
                 .writerWithDefaultPrettyPrinter().writeValueAsString(researchers);
@@ -154,15 +161,19 @@ public class UserController {
      *  (Spring Security performs the actual authorization check in AuthorizationFilter).
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
-     * @param request           the HTTP request with the JWT and the data about the user
-     * @throws IOException      if something goes wrong during the JSON deserialization process
+     * @param request           the HTTP request that has been received form the client
+     * @param response          the HTTP response that will be sent back
+     * @throws IOException      if something goes wrong with the servlets
      */
     @PutMapping(ApiEndpoints.UPDATE)
     @ResponseStatus(HttpStatus.OK)
-    public void updatePersonalDetails(HttpServletRequest request) throws IOException {
+    public void updatePersonalDetails(HttpServletRequest request,
+                                      HttpServletResponse response) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
-        this.checkJsonFields(jsonNode, "first_name", "last_name", "affiliation");
-
+        if (this.hasMissingFields(jsonNode, "first_name", "last_name", "affiliation")) {
+            response.sendError(HttpStatus.BAD_REQUEST.value(), "Missing fields in JSON body");
+            return;
+        }
         String firstName = jsonNode.get("first_name").asText();
         String lastName = jsonNode.get("last_name").asText();
         String affiliation = jsonNode.get("affiliation").asText();
@@ -171,7 +182,8 @@ public class UserController {
         try {
             userId = UUID.fromString(request.getParameter("user_id"));
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            response.sendError(HttpStatus.BAD_REQUEST.value(), "Invalid UUID in the request");
+            return;
         }
         this.authenticationService.updateUser(userId, firstName, lastName, affiliation);
     }
@@ -182,18 +194,21 @@ public class UserController {
      *  (Spring Security performs the actual authorization check in AuthorizationFilter).
      * The JWT is assumed to be in the "Authorization" header and start with "Bearer ".
      *
-     * @param request           the HTTP request with the JWT and the userID of the user
+     * @param request           the received HTTP request
+     * @param response          the HTTP response that will be sent back
+     * @throws IOException      if something goes wrong with the servlets
      */
     @DeleteMapping(ApiEndpoints.DELETE)
     @ResponseStatus(HttpStatus.OK)
-    public void deleteUser(HttpServletRequest request) {
+    public void deleteUser(HttpServletRequest request,
+                           HttpServletResponse response) throws IOException {
         UUID userId;
         try {
             userId = UUID.fromString(request.getParameter("user_id"));
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            response.sendError(HttpStatus.BAD_REQUEST.value(), "Invalid UUID in the request");
+            return;
         }
-
         this.authenticationService.deleteUser(userId);
     }
 
@@ -204,15 +219,18 @@ public class UserController {
      * If the specified username is incorrect (i.e. the user with the specified username cannot be
      *  found), then the status code 401 Unauthorized is returned (done by Spring Security).
      *
-     * @param request           the HTTP request with the username and old and new passwords
-     * @throws IOException      if something goes wrong during the JSON deserialization process
+     * @param request           the received HTTP request
+     * @param response          the HTTP response that will be sent back
+     * @throws IOException      if something goes wrong with the servlets
      */
     @PutMapping(ApiEndpoints.CHANGE_PASSWORD)
     @ResponseStatus(HttpStatus.OK)
-    public void changePassword(HttpServletRequest request) throws IOException {
+    public void changePassword(HttpServletRequest request,
+                               HttpServletResponse response) throws IOException {
         JsonNode jsonNode = this.objectMapper.readTree(request.getInputStream());
-        this.checkJsonFields(jsonNode, "username", "old_password", "new_password");
-
+        if (this.hasMissingFields(jsonNode, "username", "old_password", "new_password")) {
+            response.sendError(HttpStatus.BAD_REQUEST.value(), "Missing fields in JSON body");
+        }
         String username = jsonNode.get("username").asText();
         String oldPassword = jsonNode.get("old_password").asText();
         String newPassword = jsonNode.get("new_password").asText();

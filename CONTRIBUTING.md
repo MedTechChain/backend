@@ -13,6 +13,9 @@ Below is an index for the Java classes together with their purpose. All these cl
 - `SecurityConfig.java`: A configuration class for some of the Spring Security components (such as SecurityFilterChain, AuthenticationProvider, AuthenticationManager, CorsConfigurationSource). In this class, authorization requirements are defined for the endpoints (e.g. some endpoints are only accessible for admin, others for both admin and researcher).
 
 `controllers`
+- `error`
+  - `ErrorResponse`: A custom class for error responses.
+  - `GlobalExceptionHandler`: A class for global exception handling.
 - `ApiEndpoints`: A class that contains all supported API endpoints, so that they can be accessed from all places (for easy reference and modification).
 - `UserController.java`: A controller class that provides API endpoints for managing users and interacts with the AuthenticationService class. For the full API documentation, see [docs/](docs/) directory. Possible operations are:
   - **POST** `/api/users/login` (accessible for all)
@@ -32,9 +35,6 @@ Below is an index for the Java classes together with their purpose. All these cl
 - `email`
   - `EmailData`: An abstract class that stores the basic email data (recipient, subject and template) and is used to store the data common for all email types (i.e. child classes).
   - `CredentialsEmail`: A class that stores the data necessary to send an email with the credentials when registering a new user.
-- `queries`
-  - `DeviceType`: An enum class used to represent different types of devices that can be queried on the chain (currently "count" and "average").
-  - `QueryType`: An enum class used to represent different types of queries that can be sent to the chain (currently "bedside_monitor", "wearable_device" and "both").
 - `Researcher.java`: A DTO class for a researcher that will be sent when researchers have been requested.
 - `UserData.java`: A class that is used to store the user data (userID, username, password, email, first name, last name, affiliation etc.).
 - `UserRole.java`: An enum class used to represent different user roles (currently "admin" and "researcher"), used for authorization checks when accessing endpoints. A new user is registered as researcher and this role cannot be changed. There is only one admin.

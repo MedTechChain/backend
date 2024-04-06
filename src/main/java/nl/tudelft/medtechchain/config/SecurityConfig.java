@@ -60,6 +60,11 @@ public class SecurityConfig {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource(env)))
                 .csrf(AbstractHttpConfigurer::disable)
+                .requiresChannel(channel -> {
+                    if (Boolean.TRUE.equals(env.getProperty("server.ssl.enabled", Boolean.class))) {
+                        channel.anyRequest().requiresSecure();
+                    }
+                })
                 .authorizeHttpRequests(auth -> auth
                         // Allow custom status error codes to be sent back (instead of just 403)
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
@@ -79,10 +84,10 @@ public class SecurityConfig {
                             .permitAll()
                         .requestMatchers(HttpMethod.POST, ApiEndpoints.QUERIES_API)
                             .hasAuthority(UserRole.RESEARCHER.name())
-                        .anyRequest().authenticated()
+                        .anyRequest().denyAll()
                 )
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(this.authenticationProvider())
                 .addFilterBefore(
