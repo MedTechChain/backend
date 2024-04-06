@@ -12,7 +12,7 @@ checkstyle {
 	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
 }
 
-group = 'nl.tudelft.medtechchain'
+group = 'nl.medtechchain'
 version = '1.0.0'
 
 java {
@@ -87,7 +87,7 @@ test {
 	useJUnitPlatform()
 	jacoco {
 		enabled = true
-		includes = ['nl.tudelft.medtechchain.*']
+		includes = ['nl.medtechchain.*']
 		excludes = []
 	}
 	finalizedBy jacocoTestReport // report is always generated after tests run
@@ -99,7 +99,7 @@ jacocoTestCoverageVerification() {
 		rule {
 			enabled = true
 			element = 'CLASS'
-			includes = ['nl.tudelft.medtechchain.*']
+			includes = ['nl.medtechchain.*']
 
 			limit {
 				counter = 'BRANCH'
@@ -124,8 +124,8 @@ jacocoTestReport {
 	//  called in the application, but is required to create the class (thus, it cannot be covered).
 	afterEvaluate {
 		classDirectories.setFrom(files(classDirectories.files.collect {
-			fileTree(dir: it, exclude: ['nl/tudelft/medtechchain/config/',
-										'nl/tudelft/medtechchain/services/EmailService.class'])
+			fileTree(dir: it, exclude: ['nl/medtechchain/config/',
+										'nl/medtechchain/services/EmailService.class'])
 		}))
 	}
 
