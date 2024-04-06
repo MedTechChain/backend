@@ -1,5 +1,7 @@
 package nl.tudelft.medtechchain.config;
 
+import static org.mockito.ArgumentMatchers.anyString;
+
 import io.grpc.ChannelCredentials;
 import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
@@ -15,12 +17,15 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+import org.hyperledger.fabric.client.Contract;
 import org.hyperledger.fabric.client.Gateway;
+import org.hyperledger.fabric.client.Network;
 import org.hyperledger.fabric.client.identity.Identities;
 import org.hyperledger.fabric.client.identity.Identity;
 import org.hyperledger.fabric.client.identity.Signer;
 import org.hyperledger.fabric.client.identity.Signers;
 import org.hyperledger.fabric.client.identity.X509Identity;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -80,6 +85,26 @@ public class GatewayConfig {
                 .connection(channel)
                 .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
                 .connect();
+    }
+
+    /**
+     * Creates a test mock for the Gateway object.
+     *
+     * @return      the created mock of the Gateway object
+     */
+    @Bean
+    @ConditionalOnProperty(name = "gateway.mock", havingValue = "true")
+    public Gateway getGateway() {
+        Gateway gatewayMock = Mockito.mock(Gateway.class);
+        Network networkMock = Mockito.mock(Network.class);
+        Contract contractMock = Mockito.mock(Contract.class);
+
+        Mockito.when(gatewayMock.getNetwork(anyString())).thenReturn(networkMock);
+        Mockito.when(networkMock.getContract(anyString())).thenReturn(contractMock);
+        Mockito.when(networkMock.getContract(anyString(), anyString())).thenReturn(contractMock);
+        Mockito.when(networkMock.getName()).thenReturn("GatewayMock");
+
+        return gatewayMock;
     }
 
     /**
