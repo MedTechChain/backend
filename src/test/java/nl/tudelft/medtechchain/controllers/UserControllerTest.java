@@ -25,6 +25,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
@@ -55,7 +56,8 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final boolean HTTPS = true;
+    @Value("${server.ssl.enabled}")
+    private boolean HTTPS;
 
     // Taken from data.sql. Make sure to update these fields in case of changes in data.sql
     private static final String ADMIN_USERNAME = "admintest";

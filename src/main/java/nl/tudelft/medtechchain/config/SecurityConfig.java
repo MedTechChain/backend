@@ -60,7 +60,11 @@ public class SecurityConfig {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource(env)))
                 .csrf(AbstractHttpConfigurer::disable)
-                .requiresChannel(channel -> channel.anyRequest().requiresSecure())
+                .requiresChannel(channel -> {
+                    if (env.getProperty("server.ssl.enabled", Boolean.class, false)) {
+                        channel.anyRequest().requiresSecure();
+                    }
+                })
                 .authorizeHttpRequests(auth -> auth
                         // Allow custom status error codes to be sent back (instead of just 403)
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()

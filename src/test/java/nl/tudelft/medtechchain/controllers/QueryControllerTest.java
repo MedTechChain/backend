@@ -63,7 +63,8 @@ public class QueryControllerTest {
     @Autowired
     Gateway gateway;
 
-    private static final boolean HTTPS = true;
+    @Value("${server.ssl.enabled}")
+    private boolean HTTPS;
 
     @Value("${gateway.query-smart-contract-name}")
     private String queryContractName;
