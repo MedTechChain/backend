@@ -68,7 +68,7 @@ In order to run the Fabric Gateway, you need to have [chaincode](https://github.
 
 Tests can be found in [src/test/java/nl/medtechchain/](src/test/java/nl/medtechchain/) directory. [TestConfig](src/test/java/nl/medtechchain/TestConfig.java) class configures some mocks used for testing. The actual tests can be found in `controllers`, `models` and `services` packages (directories). For controller tests, `MockMvc` is used.
 
-When writing tests, please try to write meaningful assertions and make sure that the tests pass before you push. 
+When writing tests, please try to write meaningful assertions and make sure that the tests pass before you push.
 
 ## GitHub Actions
 
@@ -84,3 +84,43 @@ When writing tests, please try to write meaningful assertions and make sure that
 ## Pull requests
 
 Create a Pull Request from your branch into `main` and make sure that the pipeline (i.e. GitHub Actions) passes. After that, wait for approval from the project maintainers. Your time and efforts are highly appreciated! ❤️
+
+
+## A couple of debugging tips...
+
+Debugging the application (especially the one using Spring Security) might be very hard and intimidating.
+While we cannot give you a full guide on debugging, we can share a couple of tips, which might help you in locating the errors.
+
+### HTTP request does not reach its destination (e.g. 403 is returned or something else)
+
+We have disabled the CSRF protection which Spring Security uses by default, which, however, also leads to not very informative 403 errors for many other exceptions.
+In our case, we are using JWT tokens in the Authorization header, so CSRF tokens are not per se needed.
+
+Furthermore, we allow thrown exceptions to actually reach the destinations with their status codes instead of constant 403 by adding the line `.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()` to the [SecurityConfig.java](src/main/java/nl/medtechchain/config/SecurityConfig.java).
+
+Nonetheless, if you still happen to get weird (403) exceptions, we can recommend some possible actions:
+- Check whether you are requesting the correct endpoint and the correct method (e.g. you might have forgotten to update your HTTP request to use POST and you are still trying to access GET).
+- To debug the Authorization errors, set a breakpoint to [JwtAuthenticationFilter.java](src/main/java/nl/medtechchain/jwt/JwtAuthenticationFilter.java). This is the first filter that you can interact with. From there, you can *step into* the `doFilter` method of the `filterChain` in order to get to the `FilterChainProxy` and iterate over the filters. This might be quite painful...
+- Authentication errors (related to username-password authentications) can be debugged in the `DaoAuthenticationProvider` class.
+- You can always try disabling some configurations in the [SecurityConfig.java](src/main/java/nl/medtechchain/config/SecurityConfig.java) to see if requests without authentication/authorization are successful.
+
+### CORS
+
+If you are also running frontend and think that you are facing some CORS issues,
+you can change the configuration in [application.properties](src/main/resources/application.properties) file or in [SecurityConfig.java](src/main/java/nl/medtechchain/config/SecurityConfig.java) to make the policy extremely mild.
+If the request succeeds, then this is indeed a CORS issue. Otherwise, there is some other problem...
+
+### Query request to the chain fails
+
+This can be for multiple reasons. In case the issue is in the JSON to Protobuf deserialization, the first place where you can set a breakpoint would be [JsonToProtobufDeserializer.java](src/main/java/nl/medtechchain/protoutils/JsonToProtobufDeserializer.java).
+There you can see whether the JSON in the request body has been deserialized successfully.
+If the deserialization has been successful, then most likely the issue is in the chaincode...
+
+### Final thoughts on debugging
+
+As a general tip, it is always nice to see what exactly does an API except.
+E.g. in the [SecurityConfig.java](src/main/java/nl/medtechchain/config/SecurityConfig.java) you can see an overview of the endpoints and the permissions they require.
+Example requests can also be found in the [docs](docs) folder, e.g. in the [Markdown API documentation](docs/MedTechChainAPI.md).
+
+Furthermore, (JavaDoc) comments might provide some help regarding the expectations of the methods.
+We have tried documenting subtle details as comments in the methods or in the JavaDoc, so you can try also reading those.
