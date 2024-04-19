@@ -70,14 +70,7 @@ services:
       DB_POSTGRES_HOST: postgres
       SMTP_SERVER_HOST: smtp4dev
       CRYPTO_PATH: /crypto/medtechchain.nl
-      CERT_DIR_PATH: ./msp/signcerts
-      KEY_DIR_PATH: ./msp/keystore
-      TLS_CERT_PATH: ./tls/ca.crt
       PEER_ENDPOINT: peer0.medtechchain.nl:7051
-      OVERRIDE_AUTH: peer0.medtechchain.nl
-      CHANNEL_NAME: medtechchain
-      CHAINCODE_NAME: medtechchain
-      SMART_CONTRACT_NAME: medtechchain
     ports:
       - "8088:8088"
     networks:

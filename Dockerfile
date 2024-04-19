@@ -15,6 +15,6 @@ COPY --from=builder /home/gradle/src/crypto/ /crypto/
 
 WORKDIR /app
 
-EXPOSE 8080
+EXPOSE 8088
 
 CMD ["java", "-jar", "/app/spring-boot-application.jar"]
