@@ -71,7 +71,7 @@ dependencies {
 	// Profobuf
 	implementation 'com.google.protobuf:protobuf-java:3.25.3'
 	implementation 'com.google.protobuf:protobuf-java-util:3.25.3'
-	implementation ':medtechchain.protos:0.0.1'
+	implementation ':medtechchain.proto:1.0.0'
 
 
 	// Testing

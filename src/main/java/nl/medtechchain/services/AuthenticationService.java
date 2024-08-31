@@ -3,14 +3,6 @@ package nl.medtechchain.services;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import nl.medtechchain.models.Researcher;
 import nl.medtechchain.models.UserData;
 import nl.medtechchain.models.UserRole;
@@ -19,10 +11,22 @@ import nl.medtechchain.repositories.UserDataRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 /**
@@ -44,9 +48,9 @@ public class AuthenticationService implements UserDetailsService {
     /**
      * Creates an AuthenticationService object.
      *
-     * @param userDataRepository            the repository with the user data
-     * @param passwordEncoder               the password encoder to encrypt passwords
-     * @param emailService                  the email service to send emails
+     * @param userDataRepository the repository with the user data
+     * @param passwordEncoder    the password encoder to encrypt passwords
+     * @param emailService       the email service to send emails
      */
     public AuthenticationService(UserDataRepository userDataRepository,
                                  PasswordEncoder passwordEncoder, EmailService emailService) {
@@ -58,9 +62,9 @@ public class AuthenticationService implements UserDetailsService {
     /**
      * Retrieves the user with the given username.
      *
-     * @param username                      the username of the user that is requested
-     * @return                              the user (data) if they have been found in the database
-     * @throws UsernameNotFoundException    when the user with the given username has not been found
+     * @param username the username of the user that is requested
+     * @return the user (data) if they have been found in the database
+     * @throws UsernameNotFoundException when the user with the given username has not been found
      */
     @Override
     public UserData loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -75,9 +79,9 @@ public class AuthenticationService implements UserDetailsService {
     /**
      * Retrieves the user with the given userID.
      *
-     * @param userId                        the userID (UUID) of the user that is requested
-     * @return                              the user (data) if they have been found in the database
-     * @throws EntityNotFoundException      when the user with the given userID has not been found
+     * @param userId the userID (UUID) of the user that is requested
+     * @return the user (data) if they have been found in the database
+     * @throws EntityNotFoundException when the user with the given userID has not been found
      */
     public UserData loadUserByUserId(UUID userId) throws EntityNotFoundException {
         Optional<UserData> user = this.userDataRepository.findByUserId(userId);
@@ -92,8 +96,8 @@ public class AuthenticationService implements UserDetailsService {
      * Checks whether the provided email address is valid (i.e. matches the regex).
      * The regex is taken from <a href="https://www.baeldung.com/java-email-validation-regex">Baeldung</a>.
      *
-     * @param emailAddress      the email address to validate
-     * @return                  true if the provided email address is valid, false otherwise
+     * @param emailAddress the email address to validate
+     * @return true if the provided email address is valid, false otherwise
      */
     private boolean isEmailValid(String emailAddress) {
         String emailRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
@@ -106,15 +110,15 @@ public class AuthenticationService implements UserDetailsService {
      * This username will be used to log in and will be sent to the user by email.
      * <br>
      * The username is created as follows:
-     *   the first letter of the first name is prepended to the last name.
+     * the first letter of the first name is prepended to the last name.
      * E.g. John Doe would get the username jdoe.
      * In case of ties, a number is appended to the username.
      * E.g. the second John Doe would get the username jdoe1, the third would get jdoe2 etc.
      *
-     * @param firstName                     the first name of the user
-     * @param lastName                      the last name of the user
-     * @return                              the generated username
-     * @throws DataIntegrityViolationException  if first and/or last names are empty
+     * @param firstName the first name of the user
+     * @param lastName  the last name of the user
+     * @return the generated username
+     * @throws DataIntegrityViolationException if first and/or last names are empty
      */
     private String generateUsername(String firstName, String lastName) {
         if (firstName.isEmpty() || lastName.isEmpty()) {
@@ -143,7 +147,7 @@ public class AuthenticationService implements UserDetailsService {
      * The password will be sent to the user by email.
      * The idea has been taken from <a href="https://www.baeldung.com/java-generate-secure-password#using-custom-utility">Baeldung</a>
      *
-     * @return                              the generated ASCII-character password
+     * @return the generated ASCII-character password
      */
     private String generatePassword() {
         Random random = new SecureRandom();
@@ -157,12 +161,12 @@ public class AuthenticationService implements UserDetailsService {
      * Creates and registers a new user. By default, the user is assigned the "researcher" role.
      * The generated username and password will be sent to the user by the provided email.
      *
-     * @param email                         the email of the new user; must be unique
-     * @param firstName                     the first name of the new user
-     * @param lastName                      the last name of the new user
-     * @param affiliation                   the affiliation of the new user
-     * @throws DataIntegrityViolationException  if the email is invalid, or the name is empty
-     * @throws EntityExistsException            if a user with the specified email already exists
+     * @param email       the email of the new user; must be unique
+     * @param firstName   the first name of the new user
+     * @param lastName    the last name of the new user
+     * @param affiliation the affiliation of the new user
+     * @throws DataIntegrityViolationException if the email is invalid, or the name is empty
+     * @throws EntityExistsException           if a user with the specified email already exists
      */
     public UserData registerNewUser(String email, String firstName,
                                     String lastName, String affiliation) {
@@ -195,7 +199,7 @@ public class AuthenticationService implements UserDetailsService {
      * Retrieves all researchers that are present in the database.
      * The information for each researcher is: userID, first name, last name, email and affiliation.
      *
-     * @return              a list of retrieved researchers (with the information specified above)
+     * @return a list of retrieved researchers (with the information specified above)
      */
     public List<Researcher> getAllResearchers() {
         return this.userDataRepository.findAllResearchers();
@@ -205,10 +209,10 @@ public class AuthenticationService implements UserDetailsService {
      * Updates the personal details of the user.
      * The personal details that are updated are first name, last name and affiliation.
      *
-     * @param userId        the userID (UUID) of the user to be updated
-     * @param firstName     the first name of the user to be updated
-     * @param lastName      the last name of the user to be updated
-     * @param affiliation   the affiliation of the user to be updated
+     * @param userId      the userID (UUID) of the user to be updated
+     * @param firstName   the first name of the user to be updated
+     * @param lastName    the last name of the user to be updated
+     * @param affiliation the affiliation of the user to be updated
      */
     public UserData updateUser(UUID userId, String firstName, String lastName, String affiliation) {
         UserData user = this.loadUserByUserId(userId);
@@ -223,7 +227,7 @@ public class AuthenticationService implements UserDetailsService {
     /**
      * Deletes the user with the specified userID (UUID).
      *
-     * @param userId        the userID of the user to be deleted
+     * @param userId the userID of the user to be deleted
      */
     public void deleteUser(UUID userId) {
         // Check if the user with the specified userId exists
@@ -235,9 +239,9 @@ public class AuthenticationService implements UserDetailsService {
      * Changes the password of the user with the given username.
      * The provided old (current) password is compared to the stored old (current) password.
      *
-     * @param username      the username of the user whose password will be changed
-     * @param oldPassword   the old (current) password of the specified user
-     * @param newPassword   the new password for the specified user
+     * @param username    the username of the user whose password will be changed
+     * @param oldPassword the old (current) password of the specified user
+     * @param newPassword the new password for the specified user
      */
     public void changePassword(String username, String oldPassword, String newPassword) {
         UserData user = this.loadUserByUsername(username);
@@ -246,5 +250,20 @@ public class AuthenticationService implements UserDetailsService {
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         this.userDataRepository.save(user);
+    }
+
+    public String currentUserName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails userDetails) {
+                // Assuming the User ID is the username, or you can fetch it from your custom UserDetails
+                return userDetails.getUsername();
+            } else if (principal instanceof String) {
+                // In case of simple authentication with just a username (without UserDetails)
+                return (String) principal;
+            }
+        }
+        return "";
     }
 }
