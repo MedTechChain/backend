@@ -54,6 +54,7 @@ public class QueryController {
             logger.info("*** Result:\n" + result);
             return printJson(decode64(result.getSuccess().getMessage(), QueryResult::parseFrom));
         }
+        System.out.println(printJson(result));
         return printJson(result);
     }
 
@@ -64,6 +65,10 @@ public class QueryController {
         var result = chaincodeService.readQueries();
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(objectMapper.writeValueAsString(result));
+    }
+
+    public static void main(String[] args) throws InvalidProtocolBufferException {
+        System.out.println(decode64("CAA=", QueryResult::parseFrom));
     }
 }
 

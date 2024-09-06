@@ -3,7 +3,9 @@ package nl.medtechchain.services;
 import com.google.protobuf.InvalidProtocolBufferException;
 import jakarta.annotation.PreDestroy;
 import nl.medtechchain.proto.common.ChaincodeResponse;
+import nl.medtechchain.proto.config.NetworkConfig;
 import nl.medtechchain.proto.config.PlatformConfig;
+import nl.medtechchain.proto.config.UpdateNetworkConfig;
 import nl.medtechchain.proto.config.UpdatePlatformConfig;
 import nl.medtechchain.proto.query.Query;
 import nl.medtechchain.proto.query.QueryAsset;
@@ -46,7 +48,7 @@ public class ChaincodeService {
     public PlatformConfigWrapper getPlatformConfig() {
         try {
             var response = configContract.evaluateTransaction("GetPlatformConfig");
-            var chaincodeResponse = ChaincodeResponse.parseFrom(Base64.getDecoder().decode(response));
+            var chaincodeResponse = decode64(response, ChaincodeResponse::parseFrom);
             if (chaincodeResponse.getChaincodeResponseCase() == ChaincodeResponse.ChaincodeResponseCase.SUCCESS) {
                 return new PlatformConfigWrapper(decode64(chaincodeResponse.getSuccess().getMessage(), PlatformConfig::parseFrom));
             }
@@ -62,6 +64,25 @@ public class ChaincodeService {
         }
     }
 
+    public NetworkConfig getNetworkConfig() {
+        try {
+            var response = configContract.evaluateTransaction("GetNetworkConfig");
+            var chaincodeResponse = decode64(response, ChaincodeResponse::parseFrom);
+            if (chaincodeResponse.getChaincodeResponseCase() == ChaincodeResponse.ChaincodeResponseCase.SUCCESS) {
+                return decode64(chaincodeResponse.getSuccess().getMessage(), NetworkConfig::parseFrom);
+            }
+
+            if (chaincodeResponse.getChaincodeResponseCase() == ChaincodeResponse.ChaincodeResponseCase.ERROR)
+                throw new IllegalStateException(chaincodeResponse.getError().toString());
+
+            throw new IllegalStateException("Unrecognized chaincode response");
+
+        } catch (Throwable e) {
+            logger.severe("Cannot retrieve network config: " + e);
+            throw new IllegalStateException("Cannot retrieve network config:", e);
+        }
+    }
+
 
     public ChaincodeResponse submitQuery(Query query) throws EndorseException, CommitException, SubmitException, CommitStatusException, InvalidProtocolBufferException {
         return decode64(this.deviceDataContract.submitTransaction("Query", encode64(query)), ChaincodeResponse::parseFrom);
@@ -69,6 +90,10 @@ public class ChaincodeService {
 
     public ChaincodeResponse submitUpdatePlatformConfig(UpdatePlatformConfig updatePlatformConfig) throws EndorseException, CommitException, SubmitException, CommitStatusException, InvalidProtocolBufferException {
         return decode64(this.configContract.submitTransaction("UpdatePlatformConfig", encode64(updatePlatformConfig)), ChaincodeResponse::parseFrom);
+    }
+
+    public ChaincodeResponse submitUpdateNetworkConfig(UpdateNetworkConfig updateNetworkConfig) throws EndorseException, CommitException, SubmitException, CommitStatusException, InvalidProtocolBufferException {
+        return decode64(this.configContract.submitTransaction("UpdateNetworkConfig", encode64(updateNetworkConfig)), ChaincodeResponse::parseFrom);
     }
 
     public List<QueryAsset> readQueries() throws IOException, GatewayException {

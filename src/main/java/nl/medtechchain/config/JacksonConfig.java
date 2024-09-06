@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.Message;
+import nl.medtechchain.proto.config.NetworkConfig;
 import nl.medtechchain.proto.config.PlatformConfig;
+import nl.medtechchain.proto.config.UpdateNetworkConfig;
 import nl.medtechchain.proto.config.UpdatePlatformConfig;
 import nl.medtechchain.proto.query.Query;
 import nl.medtechchain.proto.query.QueryAsset;
@@ -41,6 +43,8 @@ public class JacksonConfig {
         module = addCodec(module, ReadQueryAssetPage.class, ReadQueryAssetPage.newBuilder());
         module = addCodec(module, PlatformConfig.class, PlatformConfig.newBuilder());
         module = addCodec(module, UpdatePlatformConfig.class, UpdatePlatformConfig.newBuilder());
+        module = addCodec(module, NetworkConfig.class, NetworkConfig.newBuilder());
+        module = addCodec(module, UpdateNetworkConfig.class, UpdateNetworkConfig.newBuilder());
 
         objectMapper.registerModule(module);
         return objectMapper;

@@ -18,7 +18,7 @@ public class ApiEndpoints {
     public static final String READ_QUERIES_API = "/api/queries/read";
     public static final String CONFIGS_INTERFACE_API = "/api/configs/interface";
     public static final String CONFIGS_PLATFORM_API = "/api/configs/platform";
-    public static final String CONFIGS_PLATFORM_UPDATE_API = "/api/configs/platform/update";
+    public static final String CONFIGS_NETWORK_API = "/api/configs/network";
 
     // Prefixes for paths
     public static final String USERS_API_PREFIX = "/api/users";
@@ -36,7 +36,7 @@ public class ApiEndpoints {
     public static final String READ = "/read";
     public static final String INTERFACE = "/interface";
     public static final String PLATFORM = "/platform";
-    public static final String PLATFORM_UPDATE = "/platform/update";
+    public static final String NETWORK = "/network";
 
 
     // Paths that do not require JWT. For parts that are not in this list,

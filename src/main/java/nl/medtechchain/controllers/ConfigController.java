@@ -7,12 +7,14 @@ import lombok.RequiredArgsConstructor;
 import nl.medtechchain.dto.InterfaceConfigurationDTO;
 import nl.medtechchain.proto.common.ChaincodeResponse;
 import nl.medtechchain.proto.config.PlatformConfig;
+import nl.medtechchain.proto.config.UpdateNetworkConfig;
 import nl.medtechchain.proto.config.UpdatePlatformConfig;
 import nl.medtechchain.proto.devicedata.DeviceCategory;
 import nl.medtechchain.proto.devicedata.DeviceDataAsset;
 import nl.medtechchain.proto.devicedata.DeviceDataFieldType;
 import nl.medtechchain.proto.devicedata.MedicalSpeciality;
 import nl.medtechchain.proto.query.Filter;
+import nl.medtechchain.proto.query.Query;
 import nl.medtechchain.protoutils.DeviceDataFieldTypeMapper;
 import nl.medtechchain.services.ChaincodeService;
 import org.hyperledger.fabric.client.CommitException;
@@ -91,22 +93,51 @@ public class ConfigController {
         response.getWriter().write(objectMapper.writeValueAsString(platformConfig.toPlatformConfig()));
     }
 
-    @PostMapping(ApiEndpoints.QUERIES)
+    @PostMapping(ApiEndpoints.PLATFORM)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void queryChain(@RequestBody String body, HttpServletResponse response) throws IOException, GatewayException, CommitException {
-        String queryResult = this.runUpdate(parseJson(body, UpdatePlatformConfig.newBuilder()));
+    public void updatePlatformConfig(@RequestBody String body, HttpServletResponse response) throws IOException, GatewayException, CommitException {
+        String queryResult = this.runUpdatePlatformConfig(parseJson(body, UpdatePlatformConfig.newBuilder()));
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(queryResult);
     }
 
-    private String runUpdate(UpdatePlatformConfig update) throws GatewayException, InvalidProtocolBufferException, CommitException {
+    private String runUpdatePlatformConfig(UpdatePlatformConfig update) throws GatewayException, InvalidProtocolBufferException, CommitException {
         logger.info(String.format("\n--> Run Update config transaction:%n%s%n", update.toString()));
         var result = chaincodeService.submitUpdatePlatformConfig(update);
 
         if (result.getChaincodeResponseCase() == ChaincodeResponse.ChaincodeResponseCase.SUCCESS) {
             logger.info("*** Result:\n" + result);
             return printJson(decode64(result.getSuccess().getMessage(), UpdatePlatformConfig::parseFrom));
+        }
+        return printJson(result);
+    }
+
+    @GetMapping(ApiEndpoints.NETWORK)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void networkConfiguration(HttpServletResponse response) throws IOException {
+        var networkConfig = chaincodeService.getNetworkConfig();
+        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(objectMapper.writeValueAsString(networkConfig));
+    }
+
+    @PostMapping(ApiEndpoints.NETWORK)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void updateNetworkConfig(@RequestBody String body, HttpServletResponse response) throws IOException, GatewayException, CommitException {
+        String queryResult = this.runUpdateNetworkConfig(parseJson(body, UpdateNetworkConfig.newBuilder()));
+        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(queryResult);
+    }
+
+    private String runUpdateNetworkConfig(UpdateNetworkConfig update) throws GatewayException, InvalidProtocolBufferException, CommitException {
+        logger.info(String.format("\n--> Run Update config transaction:%n%s%n", update.toString()));
+        var result = chaincodeService.submitUpdateNetworkConfig(update);
+
+        if (result.getChaincodeResponseCase() == ChaincodeResponse.ChaincodeResponseCase.SUCCESS) {
+            logger.info("*** Result:\n" + result);
+            return printJson(decode64(result.getSuccess().getMessage(), UpdateNetworkConfig::parseFrom));
         }
         return printJson(result);
     }
